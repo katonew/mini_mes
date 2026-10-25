@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:fragment="shell(title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | Mini MES'">Mini MES</title>
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/mes.css}">
+    <script defer th:src="@{/js/mes.js}"></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">본문으로 이동</a>
+<div class="workspace">
+    <aside class="sidebar" id="sidebar" aria-label="주 메뉴">
+        <a class="brand" th:href="@{/items}" aria-label="Mini MES 품목 관리">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <span>mini<span class="brand-light">mes</span><small>MANUFACTURING WORKSPACE</small></span>
+        </a>
+        <nav class="side-nav">
+            <div class="nav-heading">기준정보 <span>MASTER DATA</span></div>
+            <a class="menu-item active" th:href="@{/items}" aria-current="page"><span class="menu-code">01</span>품목 관리</a>
+            <span class="menu-item unavailable" aria-disabled="true"><span class="menu-code">02</span>BOM 관리<small>준비 중</small></span>
+            <span class="menu-item unavailable" aria-disabled="true"><span class="menu-code">03</span>공정 관리<small>준비 중</small></span>
+            <span class="menu-item unavailable" aria-disabled="true"><span class="menu-code">04</span>Routing 관리<small>준비 중</small></span>
+            <div class="nav-heading">생산관리 <span>PRODUCTION</span></div>
+            <span class="menu-item unavailable" aria-disabled="true">생산계획<small>준비 중</small></span>
+            <span class="menu-item unavailable" aria-disabled="true">작업지시<small>준비 중</small></span>
+            <span class="menu-item unavailable" aria-disabled="true">원자재 투입<small>준비 중</small></span>
+            <span class="menu-item unavailable" aria-disabled="true">생산실적<small>준비 중</small></span>
+            <div class="nav-heading">LOT · 품질 · 추적</div>
+            <span class="menu-item unavailable" aria-disabled="true">원자재 LOT<small>준비 중</small></span>
+            <span class="menu-item unavailable" aria-disabled="true">완제품 LOT<small>준비 중</small></span>
+            <span class="menu-item unavailable" aria-disabled="true">불량 관리<small>준비 중</small></span>
+            <span class="menu-item unavailable" aria-disabled="true">품질검사<small>준비 중</small></span>
+            <span class="menu-item unavailable" aria-disabled="true">LOT 추적<small>준비 중</small></span>
+        </nav>
+        <div class="sidebar-footer"><span class="phase-dot"></span>PHASE 01 <strong>기준정보 구축</strong></div>
+    </aside>
+    <button class="sidebar-backdrop" type="button" aria-label="메뉴 닫기" hidden></button>
+    <div class="workspace-body">
+        <header class="topbar">
+            <div class="header-location">
+                <button class="menu-toggle btn btn-outline-secondary" type="button" aria-controls="sidebar" aria-expanded="false">메뉴</button>
+                <span class="location-label">WORKSPACE</span><span class="location-divider">/</span>
+                <span th:text="${title}">품목 관리</span>
+            </div>
+            <span class="workspace-tag">MINI MES</span>
+        </header>
+        <div class="content-wrap">
+            <div th:if="${successMessage}" class="alert alert-success" role="status" th:text="${successMessage}"></div>
+            <main th:replace="${content}"></main>
+            <footer class="page-footer"><span>Mini MES</span><span>생산실적 및 LOT 추적 시스템</span></footer>
+        </div>
+    </div>
+</div>
+</body>
+</html>

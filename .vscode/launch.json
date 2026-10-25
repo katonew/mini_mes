@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Mini MES - Local Dev",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.taehyung.mes.MesApplication",
+            "projectName": "mini-mes-mes_side_project",
+            "args": "--spring.profiles.active=dev",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MesApplication<mes_side_project>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.taehyung.mes.MesApplication",
+            "projectName": "mes_side_project",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

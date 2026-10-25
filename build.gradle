@@ -1,0 +1,74 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.16'
+}
+
+group = 'com.taehyung'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform(SpringBootPlugin.BOM_COORDINATES)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
+
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+def localDbEnvFile = layout.projectDirectory.file('.env')
+
+tasks.named('test') {
+    useJUnitPlatform()
+
+    inputs.files(providers.provider {
+        localDbEnvFile.asFile.isFile() ? [localDbEnvFile] : []
+    }).withPropertyName('localDbEnvFile')
+
+    doFirst {
+        def envFile = localDbEnvFile.asFile
+        def envKeys = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'MES_ACTOR_ID']
+
+        if (envFile.isFile()) {
+            // Java debugger의 dotenv 형식처럼 따옴표, 주석, 이스케이프를 처리한다.
+            def content = envFile.getText('UTF-8').replace('\r\n', '\n').replace('\r', '\n')
+            def entries = content =~ /(?m)^\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?$/
+            entries.each { entry ->
+                def key = entry[1]
+                if (envKeys.contains(key)) {
+                    def value = (entry[2] ?: '').trim()
+                    def doubleQuoted = value.startsWith('"')
+                    value = value.replaceAll(/(?s)^(['"`])(.*)\1$/, '$2')
+                    if (doubleQuoted) {
+                        value = value.replace('\\n', '\n').replace('\\r', '\r')
+                    }
+                    environment(key, value)
+                }
+            }
+        }
+
+        ['DB_NAME', 'DB_USER', 'DB_PASSWORD'].each { key ->
+            if (!environment[key]?.toString()?.trim()) {
+                throw new GradleException("Missing required test environment variable: ${key}. Set it in .env or the process environment.")
+            }
+        }
+    }
+}

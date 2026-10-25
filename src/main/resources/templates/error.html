@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('처리 안내', ~{::main})}">
+<head><title>처리 안내</title></head>
+<body>
+<main id="main-content">
+    <section class="panel error-panel">
+        <p class="eyebrow">REQUEST NOTICE</p>
+        <h1 th:text="${safeTitle ?: '요청을 처리하지 못했습니다'}"></h1>
+        <p class="page-description" th:text="${safeMessage ?: '주소와 입력값을 확인한 후 다시 시도해 주세요.'}"></p>
+        <a class="btn btn-primary" th:href="@{/items}">품목 목록으로 이동</a>
+    </section>
+</main>
+</body>
+</html>

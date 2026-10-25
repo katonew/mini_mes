@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: mini-mes
+  profiles:
+    default: dev
+  datasource:
+    url: "jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME}?characterEncoding=UTF-8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true"
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+  sql:
+    init:
+      mode: never
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+mybatis:
+  mapper-locations: "classpath*:mappers/**/*.xml"
+  configuration:
+    map-underscore-to-camel-case: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+mes:
+  actor:
+    id: ${MES_ACTOR_ID:}

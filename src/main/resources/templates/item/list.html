@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('품목 관리', ~{::main})}">
+<head><title>품목 관리</title></head>
+<body>
+<main id="main-content">
+    <section class="page-heading">
+        <div><p class="eyebrow">MASTER DATA / ITEMS</p><h1>품목 관리</h1>
+            <p class="page-description">생산의 기준이 되는 품목을 등록하고 관리합니다.</p></div>
+        <a class="btn btn-primary" th:href="@{/items/new}"><span aria-hidden="true">＋</span> 품목 등록</a>
+    </section>
+    <section class="panel search-panel" aria-labelledby="search-title">
+        <div class="section-heading"><h2 id="search-title">품목 검색</h2><span class="subtle">코드와 명칭으로 조회</span></div>
+        <form method="get" th:action="@{/items}" class="row g-3 align-items-end">
+            <div class="col-md-4"><label class="form-label" for="searchCode">품목코드</label>
+                <input class="form-control" id="searchCode" name="code" type="search" maxlength="50" th:value="${code}" placeholder="품목코드 입력"></div>
+            <div class="col-md-5"><label class="form-label" for="searchName">품목명</label>
+                <input class="form-control" id="searchName" name="name" type="search" maxlength="200" th:value="${name}" placeholder="품목명 입력"></div>
+            <div class="col-md-3 search-actions"><a class="btn btn-outline-secondary" th:href="@{/items}">초기화</a><button class="btn btn-primary" type="submit">검색</button></div>
+        </form>
+        <div th:if="${searchError}" class="alert alert-danger mt-3 mb-0" role="alert" th:text="${searchError}"></div>
+    </section>
+    <section class="panel list-panel" aria-labelledby="list-title">
+        <div class="list-heading"><div class="d-flex align-items-center gap-2"><h2 id="list-title">품목 목록</h2>
+            <span th:if="${searchError == null}" class="count-pill" th:text="${#lists.size(items)}">0</span></div>
+            <span class="subtle">최신 등록순</span></div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th scope="col">품목코드</th><th scope="col">품목명</th><th scope="col">품목구분</th><th scope="col">관리단위</th><th scope="col">사용 여부</th><th scope="col" class="text-end">관리</th></tr></thead>
+                <tbody>
+                <tr th:each="item : ${items}">
+                    <td><a class="item-code" th:href="@{/items/{id}/edit(id=${item.itemId})}" th:text="${item.itemCode}"></a></td>
+                    <td class="item-name" th:text="${item.itemName}"></td>
+                    <td><span class="kind-label" th:text="${item.itemKindLabel}"></span></td>
+                    <td><span th:text="${item.unitCode}"></span><small class="subtle ms-1" th:text="${item.unitLabel}"></small></td>
+                    <td><span class="status-badge" th:classappend="${item.isActive == 1 ? 'status-active' : 'status-inactive'}" th:text="${item.isActive == 1 ? '사용' : '미사용'}"></span></td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-secondary" th:href="@{/items/{id}/edit(id=${item.itemId})}" th:attr="aria-label=${item.itemCode + ' 수정'}">수정</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(items) and searchError == null}"><td colspan="6" class="empty-state">
+                    <span class="empty-mark" aria-hidden="true">—</span><strong>조회된 품목이 없습니다</strong><p>검색 조건을 변경하거나 새로운 품목을 등록해 주세요.</p>
+                    <a class="btn btn-outline-primary btn-sm" th:href="@{/items/new}">첫 품목 등록</a></td></tr>
+                <tr th:if="${searchError}"><td colspan="6" class="empty-state">검색 조건을 확인해 주세요.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-note"><span class="note-dot"></span>미사용 품목도 기존 생산 이력과 참조 관계를 유지합니다.</div>
+    </section>
+</main>
+</body>
+</html>

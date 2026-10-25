@@ -1,0 +1,11 @@
+{
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-17",
+            "path": "C:\\Users\\kwon\\Desktop\\develop\\java\\jdk-17.0.20.1+1",
+            "default": true
+        }
+    ],
+    "java.import.gradle.java.home": "C:\\Users\\kwon\\Desktop\\develop\\java\\jdk-17.0.20.1+1",
+    "java.compile.nullAnalysis.mode": "disabled"
+}

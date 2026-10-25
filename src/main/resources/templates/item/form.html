@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell(${editing ? '품목 수정' : '품목 등록'}, ~{::main})}">
+<head><title>품목 등록·수정</title></head>
+<body>
+<main id="main-content">
+    <a class="back-link" th:href="@{/items}">← 품목 목록</a>
+    <section class="page-heading">
+        <div><p class="eyebrow">MASTER DATA / ITEMS</p><h1 th:text="${editing ? '품목 수정' : '품목 등록'}"></h1>
+            <p class="page-description" th:text="${editing ? '품목명과 사용 여부를 변경합니다.' : '원자재와 완제품의 기준정보를 등록합니다.'}"></p></div>
+        <span class="step-label" th:text="${editing ? 'EDIT ITEM' : 'NEW ITEM'}"></span>
+    </section>
+    <div class="form-layout">
+        <section class="panel">
+            <div class="section-heading"><h2>품목 기본정보</h2><span class="subtle"><span class="required-mark">*</span> 필수 입력</span></div>
+            <form method="post" th:object="${itemForm}" th:action="${editing} ? @{/items/{id}(id=${itemId})} : @{/items}" data-save-form>
+                <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger" role="alert">
+                    <strong>저장하지 못했습니다.</strong>
+                    <ul class="mb-0 mt-1"><li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li></ul>
+                </div>
+                <div class="mb-4">
+                    <label for="itemCode" class="form-label">품목코드 <span class="required-mark">*</span></label>
+                    <input type="text" class="form-control code-input" th:field="*{itemCode}" th:errorclass="is-invalid" th:readonly="${editing}" maxlength="50" pattern="[ -~]+" required aria-describedby="codeHelp" placeholder="예: SENSOR-001">
+                    <div id="codeHelp" class="form-text" th:text="${editing ? '등록 후 변경할 수 없습니다.' : 'ASCII 문자로 최대 50자. 이미 등록된 코드는 사용할 수 없습니다.'}"></div>
+                </div>
+                <div class="mb-4">
+                    <label for="itemName" class="form-label">품목명 <span class="required-mark">*</span></label>
+                    <input type="text" class="form-control" th:field="*{itemName}" th:errorclass="is-invalid" maxlength="200" required placeholder="예: 산업용 온도 센서 모듈">
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label for="itemKind" class="form-label">품목구분 <span class="required-mark">*</span></label>
+                        <select th:if="${!editing}" class="form-select" th:field="*{itemKind}" th:errorclass="is-invalid" required>
+                            <option value="">품목구분 선택</option>
+                            <option th:each="kind : ${itemKinds}" th:value="${kind.code}" th:text="${kind.label + ' (' + kind.code + ')'}"></option>
+                        </select>
+                        <input th:if="${editing}" class="form-control code-input" type="text" th:field="*{itemKind}" readonly required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="unitCode" class="form-label">관리단위 <span class="required-mark">*</span></label>
+                        <select th:if="${!editing}" class="form-select" th:field="*{unitCode}" th:errorclass="is-invalid" required>
+                            <option value="">관리단위 선택</option>
+                            <option th:each="unit : ${units}" th:value="${unit.code}" th:text="${unit.label + ' (' + unit.code + ')'}"></option>
+                        </select>
+                        <input th:if="${editing}" class="form-control code-input" type="text" th:field="*{unitCode}" readonly required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="isActive" class="form-label">사용 여부 <span class="required-mark">*</span></label>
+                    <select class="form-select status-select" th:field="*{isActive}" th:errorclass="is-invalid" required>
+                        <option value="">사용 여부 선택</option><option value="1">사용</option><option value="0">미사용</option>
+                    </select>
+                    <div class="form-text">미사용으로 변경해도 품목과 기존 생산 이력은 삭제되지 않습니다.</div>
+                </div>
+                <div class="form-actions"><a class="btn btn-outline-secondary" th:href="@{/items}">취소</a>
+                    <button type="submit" class="btn btn-primary" th:text="${editing ? '변경사항 저장' : '품목 등록'}"></button></div>
+            </form>
+        </section>
+        <aside class="form-guide" aria-labelledby="guide-title">
+            <span class="guide-label">ITEM GUIDE</span><h2 id="guide-title">등록 전 확인하세요</h2>
+            <div class="guide-step"><span>01</span><div><h3>변하지 않는 식별 기준</h3><p>품목코드·품목구분·관리단위는 등록 후 변경할 수 없습니다.</p></div></div>
+            <div class="guide-step"><span>02</span><div><h3>관리단위 확인</h3><p>EA는 개수 단위입니다. M·G는 소수 수량을 지원하며, 단위는 자동 환산하지 않습니다.</p></div></div>
+            <div class="guide-step"><span>03</span><div><h3>사용 여부 관리</h3><p>미사용 품목은 향후 신규 BOM 구성 및 신규 작업지시 대상에서 제외합니다. 기존 이력은 유지합니다.</p></div></div>
+            <p class="guide-footnote">반제품(SEMI) 등록은 향후 확장 범위입니다.</p>
+        </aside>
+    </div>
+</main>
+</body>
+</html>
