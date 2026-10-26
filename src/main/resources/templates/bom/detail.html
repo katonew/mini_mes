@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('BOM 상세', ~{::main})}">
+<head><title>BOM 상세</title></head><body>
+<main id="main-content">
+    <a class="back-link" th:href="@{/boms}">← BOM 목록</a>
+    <section class="page-heading">
+        <div><p class="eyebrow">MASTER DATA / BOM</p><h1>BOM 상세</h1><p class="page-description" th:text="${version.bomCode + ' / V' + version.versionNo}"></p></div>
+        <div class="d-flex flex-wrap gap-2">
+            <a th:if="${!version.used}" class="btn btn-outline-secondary" th:href="@{/boms/versions/{id}/edit(id=${version.bomVersionId})}">구성 수정</a>
+            <a class="btn btn-primary" th:href="@{/boms/{id}/versions/new(id=${version.bomId})}">＋ 새 버전 등록</a>
+        </div>
+    </section>
+    <div th:if="${notice}" class="alert alert-info" role="status" th:text="${notice}"></div>
+    <section class="panel search-panel" aria-labelledby="info-title">
+        <div class="section-heading"><h2 id="info-title">BOM 기본정보</h2><span class="status-badge" th:classappend="${version.used ? 'status-active' : 'status-inactive'}" th:text="${version.used ? '사용 이력 있음 · 수정 제한' : '사용 이력 없음'}"></span></div>
+        <dl class="row mb-0 bom-summary">
+            <dt class="col-sm-3">BOM 코드 / 버전</dt><dd class="col-sm-9" th:text="${version.bomCode + ' / V' + version.versionNo}"></dd>
+            <dt class="col-sm-3">완제품</dt><dd class="col-sm-9" th:text="${version.productCode + ' · ' + version.productName}"></dd>
+            <dt class="col-sm-3">기준 생산수량</dt><dd class="col-sm-9" th:text="${version.baseQty.stripTrailingZeros().toPlainString() + ' ' + version.productUnitCode}"></dd>
+            <dt class="col-sm-3">최초 사용 시각 (UTC)</dt><dd class="col-sm-9" th:text="${version.firstUsedAt != null ? #temporals.format(version.firstUsedAt, 'yyyy-MM-dd HH:mm:ss') : (version.used ? '작업지시 참조 있음 · 시각 미기록' : '사용 이력 없음')}"></dd>
+        </dl>
+    </section>
+    <section class="panel list-panel" aria-labelledby="component-title">
+        <div class="list-heading"><h2 id="component-title">구성 원자재</h2><span class="subtle">위 기준 생산수량에 대한 예상 소요량</span></div>
+        <div class="table-responsive"><table class="table align-middle mb-0">
+            <thead><tr><th scope="col">순번</th><th scope="col">원자재 코드</th><th scope="col">원자재 명칭</th><th scope="col" class="text-end">기준 소요량</th><th scope="col">보존 단위</th><th scope="col">현재 품목</th></tr></thead>
+            <tbody><tr th:each="row : ${version.components}">
+                <td th:text="${row.lineNo}"></td><td class="item-code" th:text="${row.materialCode}"></td><td class="item-name" th:text="${row.materialName}"></td>
+                <td class="text-end" th:text="${row.requiredQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.materialUnitCode}"></td>
+                <td><span class="status-badge" th:classappend="${row.isActive == 1 ? 'status-active' : 'status-inactive'}" th:text="${row.isActive == 1 ? '사용' : '미사용'}"></span></td>
+            </tr><tr th:if="${#lists.isEmpty(version.components)}"><td colspan="6" class="empty-state">등록된 구성 원자재가 없습니다.</td></tr></tbody>
+        </table></div>
+        <div class="table-note"><span class="note-dot"></span>BOM 소요량은 예상 기준입니다. 실제 원자재 소비 이력과 구분하며 서로 다른 단위는 합산하지 않습니다.</div>
+    </section>
+</main></body></html>

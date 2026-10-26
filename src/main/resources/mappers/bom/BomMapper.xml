@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taehyung.mes.bom.BomMapper">
+    <sql id="headerColumns">b.bom_id, b.bom_code, b.product_item_id, b.created_by,
+        i.item_code AS product_code, i.item_name AS product_name</sql>
+    <sql id="versionColumns">v.bom_version_id, v.bom_id, v.version_no, v.base_qty,
+        v.product_unit_code, v.first_used_at, v.created_at, v.created_by,
+        b.bom_code, b.product_item_id, i.item_code AS product_code, i.item_name AS product_name,
+        EXISTS(SELECT 1 FROM work_order w WHERE w.bom_version_id = v.bom_version_id) AS work_order_referenced</sql>
+    <select id="findAll" resultType="com.taehyung.mes.bom.BomVersion">
+        SELECT <include refid="versionColumns"/>
+        FROM bom_version v JOIN bom b ON b.bom_id = v.bom_id JOIN item i ON i.item_id = b.product_item_id
+        <where>
+            <if test="code != ''">AND LOCATE(#{code}, i.item_code) &gt; 0</if>
+            <if test="name != ''">AND LOCATE(#{name}, i.item_name) &gt; 0</if>
+        </where>
+        ORDER BY b.bom_id DESC, v.version_no DESC
+    </select>
+    <select id="findBom" resultType="com.taehyung.mes.bom.Bom">
+        SELECT <include refid="headerColumns"/> FROM bom b JOIN item i ON i.item_id = b.product_item_id
+        WHERE b.bom_id = #{bomId}
+    </select>
+    <select id="findBomForUpdate" resultType="com.taehyung.mes.bom.Bom">
+        SELECT bom_id, bom_code, product_item_id, created_by FROM bom WHERE bom_id = #{bomId} FOR UPDATE
+    </select>
+    <select id="findVersion" resultType="com.taehyung.mes.bom.BomVersion">
+        SELECT <include refid="versionColumns"/>
+        FROM bom_version v JOIN bom b ON b.bom_id = v.bom_id JOIN item i ON i.item_id = b.product_item_id
+        WHERE v.bom_version_id = #{versionId}
+    </select>
+    <select id="findVersionForUpdate" resultType="com.taehyung.mes.bom.BomVersion">
+        SELECT bom_version_id, bom_id, version_no, base_qty, product_unit_code, first_used_at, created_at, created_by
+        FROM bom_version WHERE bom_version_id = #{versionId} FOR UPDATE
+    </select>
+    <select id="findComponents" resultType="com.taehyung.mes.bom.BomComponent">
+        SELECT c.bom_component_id, c.bom_version_id, c.material_item_id, c.line_no,
+               c.required_qty, c.material_unit_code, c.created_by,
+               i.item_code AS material_code, i.item_name AS material_name, i.is_active
+        FROM bom_component c JOIN item i ON i.item_id = c.material_item_id
+        WHERE c.bom_version_id = #{versionId} ORDER BY c.line_no
+    </select>
+    <select id="findSelectableItems" resultType="com.taehyung.mes.item.Item">
+        SELECT item_id, item_code, item_name, item_kind, unit_code, is_active FROM item
+        WHERE is_active = 1 AND item_kind = #{kind}
+        <if test="unit != null">AND unit_code = #{unit}</if>
+        ORDER BY item_code
+    </select>
+    <select id="existsByCode" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM bom WHERE bom_code = #{code})
+    </select>
+    <select id="findItemsByIds" resultType="com.taehyung.mes.item.Item">
+        SELECT item_id, item_code, item_name, item_kind, unit_code, is_active FROM item WHERE item_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+    <select id="existsVersion" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM bom_version WHERE bom_id = #{bomId} AND version_no = #{versionNo})
+    </select>
+    <select id="hasWorkOrders" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM work_order WHERE bom_version_id = #{versionId})
+    </select>
+    <insert id="insertBom" useGeneratedKeys="true" keyProperty="bomId" keyColumn="bom_id">
+        INSERT INTO bom (product_item_id, bom_code, created_by) VALUES (#{productItemId}, #{bomCode}, #{createdBy})
+    </insert>
+    <insert id="insertVersion" useGeneratedKeys="true" keyProperty="bomVersionId" keyColumn="bom_version_id">
+        INSERT INTO bom_version (bom_id, version_no, base_qty, product_unit_code, created_by)
+        VALUES (#{bomId}, #{versionNo}, #{baseQty}, #{productUnitCode}, #{createdBy})
+    </insert>
+    <insert id="insertComponent">
+        INSERT INTO bom_component (bom_version_id, material_item_id, line_no, required_qty, material_unit_code, created_by)
+        VALUES (#{bomVersionId}, #{materialItemId}, #{lineNo}, #{requiredQty}, #{materialUnitCode}, #{createdBy})
+    </insert>
+    <update id="updateQuantity">
+        UPDATE bom_component SET required_qty = #{quantity}
+        WHERE bom_version_id = #{versionId} AND bom_component_id = #{componentId}
+    </update>
+</mapper>

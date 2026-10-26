@@ -103,7 +103,7 @@ PK item_id. FK 없음. CHECK is_active IN (0,1), 전역 UNIQUE uq_item_code는 �
 | product_item_id | BIGINT UNSIGNED | N | 없음 | item FK, 생산 품목 |
 | bom_code | VARCHAR(50), 코드 | N | 없음 | BOM 업무 식별 코드, U? |
 
-PK bom_id, FK product_item_id → item.item_id. 인덱스 ix_bom_product(product_item_id). 헤더 하나당 생산 품목 하나. 품목당 BOM 헤더 하나라는 UK는 정책에 없으므로 추가하지 않는다. CHECK 별도 없음. bom_code 유일성 범위는 승인 후 결정한다.
+PK bom_id, FK product_item_id → item.item_id. 인덱스 ix_bom_product(product_item_id). 헤더 하나당 생산 품목 하나. 품목당 BOM 헤더 하나라는 UK는 정책에 없으므로 추가하지 않는다. CHECK 별도 없음. 현재 schema.sql의 uq_bom_code로 BOM 코드 전역 유일성을 보호한다.
 
 ### 4.3 bom_version
 
@@ -129,7 +129,7 @@ PK bom_version_id, FK bom_id → bom.bom_id. UK uq_bom_version(bom_id,version_no
 | required_qty | DECIMAL(18,6) | N | 없음 | base_qty 생산에 필요한 원자재 예상량 |
 | material_unit_code | VARCHAR(16), 코드 | N | 없음 | 구성행의 원자재 단위 보존 |
 
-PK bom_component_id. FK bom_version_id → bom_version, material_item_id → item. UK uq_bom_component_line(bom_version_id,line_no), INDEX ix_bom_component_item(material_item_id). CHECK line_no > 0, required_qty > 0. 동일 원자재 구성행을 금지하는 UK(version,item)는 승인되지 않아 추가하지 않는다. 품목별 예상량은 해당 단위의 구성행을 합산한다.
+PK bom_component_id. FK bom_version_id → bom_version, material_item_id → item. UK uq_bom_component_line(bom_version_id,line_no), INDEX ix_bom_component_item(material_item_id). CHECK line_no > 0, required_qty > 0. 2026-10-26 BOM 화면 정책은 동일 버전 원자재 중복 금지로 확정했다. 스키마 변경 금지에 따라 UK(version,item)는 추가하지 않으며 Service의 중복 검증과 부모 잠금으로 해당 저장 경로를 보호한다. SQL 직접 쓰기까지 DB가 중복 품목을 차단한다고 주장하지 않는다. 기존 데이터의 품목별 예상량 집계는 단위별 구성행 합산 원칙을 유지한다.
 
 ### 4.5 manufacturing_process
 
@@ -446,6 +446,8 @@ FK의 부모 컬럼은 모두 PK를 참조한다. 자식 FK 컬럼의 타입·�
 검사수량 0, 검사대상 0의 표시 정책은 미확정이므로 자동 PASS를 만들지 않는다. LOT 전체의 최종 품질 요약 상태명·부분 합격의 의미·가용량은 **설계 결정 필요**다. 검사 진행 표시와 작업지시 IN_PROGRESS를 혼동하지 않고 화면에서 각각 구분해야 한다. FAIL 또는 MIXED가 되어도 WorkOrder COMPLETED를 되돌리지 않는다. 위 표시명은 승인된 새 상태 전이가 아니다.
 
 ### 7.2 기준정보 버전 보존
+
+**2026-10-26 BOM 구현 확정 범위:** BR-07에 따라 FINISHED/EA 활성 품목·기준 1 EA·RAW 구성 1개 이상을 등록한다. 사용 전 버전은 기존 소요량 변경과 원자재 추가만 가능하며 제거·교체는 새 버전을 작성한다. BOM 코드·제품·버전 번호는 고정한다. first_used_at 또는 work_order 참조가 있으면 변경을 차단한다. 별도 상태 컬럼·DDL 변경·물리 삭제는 없다. 기존 비-1-EA 버전은 조회만 제공한다. 아래 Routing·작업지시 생성 설명은 해당 기능의 후속 구현 규약이며 이번에 구현하지 않는다.
 
 공유 불변 BOMVersion·RoutingRevision을 추천한다. 작업지시는 정확한 버전 PK를 참조하고 최신 버전을 다시 찾아 연결하지 않는다. 최초 작업지시 생성 시 BOMVersion → RoutingRevision 순으로 배타 행 잠금을 확보하고 제품·단위·구성을 검증한 뒤 first_used_at을 설정한다. 작업지시 삽입과 같은 트랜잭션에서 처리한다. 한번 사용된 버전의 잠금 표시는 취소 후에도 해제하지 않는 추천안이다.
 

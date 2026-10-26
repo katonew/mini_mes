@@ -299,7 +299,7 @@ ITEM, WORK_ORDER, BOM_COMPONENT, REQUEST_RECEIPT, FINISHED_GOODS_LOT는 이전 �
 | Item | PK, 전역 업무 코드 UK | 기존 schema.sql과 품목 화면 승인 정책 적용 |
 | Process | PK, 업무 코드 UK 후보 | 이번 품목 화면 보완에서 타 도메인 정책 변경 없음 |
 | BOMVersion | bom_id FK, (bom_id, version_no) UK | 적용 버전의 구성·단위·기준량 보존 |
-| BOMComponent | version FK, item FK, (version, line_no) UK | 동일 품목 중복 구성 허용은 미확정. 품목별 예상량은 구성행 합산 |
+| BOMComponent | version FK, item FK, (version, line_no) UK | 2026-10-26 신규/편집 BOM은 동일 품목 중복 금지(BR-07). 기존 스키마는 유지하고 부모 잠금과 Service 검증 적용. 품목별 예상량은 구성행 합산 |
 | RoutingRevision / Step | routing FK, (routing, revision_no) UK / revision·process FK, (revision, step_no) UK | 병렬·반복 공정 정책을 추가하지 않음 |
 | ProductionPlan | product_item_id FK | 계획번호 UK 후보, 상태·변경·취소 정책은 미확정 |
 | WorkOrder | plan·item·BOMVersion·RoutingRevision FK | 생성 시 제품 일치 검증. 계획의 제품 변경으로 작업지시 제품이 바뀌지 않도록 적용 product_item_id 보존 |
@@ -319,7 +319,7 @@ ITEM, WORK_ORDER, BOM_COMPONENT, REQUEST_RECEIPT, FINISHED_GOODS_LOT는 이전 �
 
 ### 과거 생산 기준의 보존: B 추천안
 
-BOM은 식별 헤더 + 불변 Version + 해당 Component로, Routing은 헤더 + 불변 Revision + Step으로 보존한다. 작업지시는 생성 시 두 버전을 참조하고 이후 최신 버전을 따라가지 않는다. 사용된 버전의 내용·단위·구성 순서는 변경 불가로 보존하고 새 버전을 작성하는 방식을 추천한다. 발행 상태명·사용 가능 기간·미사용 초안 수정 절차는 C다.
+BOM은 식별 헤더 + 불변 Version + 해당 Component로, Routing은 헤더 + 불변 Revision + Step으로 보존한다. 작업지시는 생성 시 두 버전을 참조하고 이후 최신 버전을 따라가지 않는다. 사용된 버전의 내용·단위·구성 순서는 변경 불가로 보존하고 새 버전을 작성하는 방식을 추천한다. 2026-10-26 BOM에 대해서는 사용 이력 후 불변, 미사용 버전의 소요량 수정·구성 추가만 허용, 제거·교체는 새 버전, 물리 삭제 없음으로 승인했다(BR-07). 별도 발행 상태명·사용 가능 기간과 Routing 초안 수정 절차는 C다.
 
 대안은 작업지시 생성 시 BOM·Routing을 복사하는 스냅샷 테이블이다. 원본 편집과 격리가 쉽지만 주문마다 구성 복제가 늘어난다. 본 설계는 공유 불변 버전 참조를 추천하며, 해당 버전을 변경 불가로 보호할 수 없다면 스냅샷이 필요하다. 1차 품목 화면의 승인 정책은 품목코드·구분·단위 변경 금지, 명칭·사용 여부 수정, 물리 삭제 금지다. RAW·SEMI·FINISHED 중 신규 등록은 RAW·FINISHED, 단위는 EA·M·G를 사용한다. 품목 created_by는 MES_ACTOR_ID 기반 개발용 식별자이며 인증 사용자 FK가 아니다. 품목·공정 이름의 당시 표시 스냅샷까지 보장하는 기능은 이번 구현에 포함하지 않는다.
 
@@ -543,7 +543,7 @@ InnoDB 잠금 읽기는 명시적인 트랜잭션 안에서 사용해야 하며 
 | 부분 합격 LOT 요약 상태·가용수량 | 수량 분리는 확정, 상태명·판정·사용 가능량은 미확정. 검사 합격을 임의로 출하 가능량으로 선언하지 않음 |
 | 원자재 예약 | 현재고·가용량 정의와 원장·잠금 범위에 영향. 예약 엔티티를 자동 포함하지 않음 |
 | 완료 LOT·참조 기준정보 삭제 | 보호 FK 추천과 실제 업무 삭제 정책 구분. 이력 연쇄 삭제 설계 금지 |
-| BOM·Routing 발행·변경 | 적용 시 불변 버전 추천 채택 필요. 초안 편집·발행 상태·활성기간·다단계 구성 미확정 |
+| BOM·Routing 발행·변경 | BOM 사용 후 불변·미사용 버전 소요량 수정/구성 추가는 BR-07로 확정. BOM 발행·활성기간·다단계 구성 및 Routing 변경 정책은 후속 결정 |
 | 계획 변경·취소·초과 배분 / 지시 변경 | 과거 작업지시 기준·수량 변경 허용 범위를 승인 전 확정하지 않음 |
 | 단위·0수량·코드 유일성 | 정밀도·변환·개별 0기록·LOT 번호 유일성 범위·채번은 물리 설계 전 결정 |
 | 불량 상세 정책 | 복수 원인 수량 중복과 부모 불량합 관계, 상세 정정 이력을 결정 |

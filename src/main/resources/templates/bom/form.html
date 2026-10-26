@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell(${mode == 'edit' ? 'BOM 수정' : 'BOM 등록'}, ~{::main})}">
+<head><title>BOM 등록·수정</title></head><body>
+<main id="main-content">
+    <a class="back-link" th:href="@{/boms}">← BOM 목록</a>
+    <section class="page-heading">
+        <div><p class="eyebrow">MASTER DATA / BOM</p><h1 th:text="${mode == 'edit' ? 'BOM 구성 수정' : (mode == 'version' ? 'BOM 새 버전 등록' : 'BOM 등록')}"></h1>
+            <p class="page-description">완제품 1개(1 EA)를 생산하는 데 필요한 원자재 기준 소요량을 입력합니다.</p></div>
+        <span class="step-label" th:text="${mode == 'edit' ? 'EDIT BOM' : 'NEW BOM VERSION'}"></span>
+    </section>
+    <section class="panel bom-form-panel">
+        <form method="post" th:object="${bomForm}" th:action="${mode == 'edit'} ? @{/boms/versions/{id}(id=${versionId})} : (${mode == 'version'} ? @{/boms/{id}/versions(id=${bomId})} : @{/boms})"
+              data-save-form data-bom-form th:attr="data-max-components=${maxComponents}">
+            <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger" role="alert"><strong>저장하지 못했습니다.</strong><ul class="mb-0 mt-1"><li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li></ul></div>
+            <div th:if="${choicesError}" class="alert alert-warning" role="alert" th:text="${choicesError}"></div>
+            <input th:if="${mode == 'edit'}" type="hidden" th:field="*{editToken}">
+            <div class="section-heading"><h2>BOM 기본정보</h2><span class="subtle"><span class="required-mark">*</span> 필수 입력</span></div>
+            <div class="row g-4 mb-4">
+                <div class="col-md-4"><label for="bomCode" class="form-label">BOM 코드 <span class="required-mark">*</span></label>
+                    <input class="form-control code-input" type="text" th:field="*{bomCode}" th:errorclass="is-invalid" th:readonly="${mode != 'create'}" required maxlength="50" pattern="[ -~]+" placeholder="예: BOM-SENSOR">
+                    <div class="form-text">전체 BOM에서 유일한 ASCII 코드입니다. 등록 후 변경할 수 없습니다.</div></div>
+                <div class="col-md-5"><label th:for="${mode == 'create' ? 'productItemId' : 'productDisplay'}" class="form-label">완제품 <span class="required-mark">*</span></label>
+                    <select th:if="${mode == 'create'}" class="form-select" th:field="*{productItemId}" th:errorclass="is-invalid" required>
+                        <option value="">완제품 선택</option>
+                        <option th:each="item : ${products}" th:value="${item.itemId}" th:text="${item.itemCode + ' · ' + item.itemName + (item.isActive == 1 ? '' : ' (미사용)')}" th:disabled="${item.isActive != 1 or item.itemKind != 'FINISHED' or item.unitCode != 'EA'}"></option>
+                        <option th:if="${bomForm.productItemId != null and !selectedItems.containsKey(bomForm.productItemId)}" th:value="*{productItemId}" th:text="${'선택값: ' + bomForm.productItemId + ' (조회 불가)'}"></option>
+                    </select>
+                    <div th:if="${mode != 'create'}" th:with="product=${selectedItems[bomForm.productItemId]}">
+                        <input type="hidden" th:field="*{productItemId}">
+                        <input id="productDisplay" class="form-control" readonly aria-label="완제품" th:value="${product != null ? product.itemCode + ' · ' + product.itemName : '품목 ID: ' + bomForm.productItemId}">
+                    </div>
+                    <div class="form-text">새 버전에는 사용 중인 FINISHED·EA 품목만 선택할 수 있습니다.</div></div>
+                <div class="col-md-3"><label for="versionNo" class="form-label">버전 번호 <span class="required-mark">*</span></label>
+                    <input class="form-control" type="number" th:field="*{versionNo}" th:errorclass="is-invalid" th:readonly="${mode == 'edit'}" required min="1" max="4294967295" step="1" placeholder="예: 1">
+                    <div class="form-text">같은 BOM 안에서 중복될 수 없습니다.</div></div>
+            </div>
+            <div class="section-heading bom-component-heading"><h2>구성 원자재</h2><button type="button" class="btn btn-sm btn-outline-primary" data-add-component>＋ 원자재 추가</button></div>
+            <div class="form-text mb-3">EA는 정수, M·G는 소수 6자리까지 입력합니다. 저장된 구성은 제거·교체할 수 없으며 새 버전으로 변경합니다.</div>
+            <div data-component-message class="alert alert-warning" role="alert" hidden></div>
+            <div class="bom-components" data-components>
+                <div class="bom-component-row" data-component-row th:each="row, stat : *{components}">
+                    <div class="bom-material-field">
+                        <label class="form-label" th:for="${'material-' + stat.index}">원자재 <span data-row-number th:text="${stat.count}"></span> <span class="required-mark">*</span></label>
+                        <input type="hidden" data-field="bomComponentId" th:field="*{components[__${stat.index}__].bomComponentId}">
+                        <select th:if="${row.bomComponentId == null}" class="form-select" data-field="materialItemId" th:field="*{components[__${stat.index}__].materialItemId}" th:id="${'material-' + stat.index}" required>
+                            <option value="">원자재 선택</option>
+                            <option th:each="item : ${materials}" th:value="${item.itemId}" th:attr="data-unit=${item.unitCode}" th:text="${item.itemCode + ' · ' + item.itemName + ' (' + item.unitCode + ')' + (item.isActive == 1 ? '' : ' · 미사용')}" th:disabled="${item.isActive != 1 or item.itemKind != 'RAW'}"></option>
+                            <option th:if="${row.materialItemId != null and !selectedItems.containsKey(row.materialItemId)}" th:value="${row.materialItemId}" th:text="${'선택값: ' + row.materialItemId + ' (조회 불가)'}"></option>
+                        </select>
+                        <div th:if="${row.bomComponentId != null}" th:with="material=${selectedItems[row.materialItemId]}">
+                            <input type="hidden" data-field="materialItemId" th:field="*{components[__${stat.index}__].materialItemId}" th:attr="data-unit=${material != null ? material.unitCode : ''}">
+                            <input class="form-control" readonly data-material-display th:id="${'material-' + stat.index}" th:value="${material != null ? material.itemCode + ' · ' + material.itemName + ' (' + material.unitCode + ')' + (material.isActive == 1 ? '' : ' · 미사용') : '품목 ID: ' + row.materialItemId}">
+                        </div>
+                    </div>
+                    <div><label class="form-label" th:for="${'quantity-' + stat.index}">기준 소요량 <span class="required-mark">*</span></label>
+                        <input class="form-control" type="text" inputmode="decimal" data-field="requiredQty" th:field="*{components[__${stat.index}__].requiredQty}" th:id="${'quantity-' + stat.index}" required maxlength="64" pattern="[0-9]+([.][0-9]{1,6})?" placeholder="0보다 큰 수량"></div>
+                    <div class="bom-row-action"><button th:if="${row.bomComponentId == null}" type="button" class="btn btn-sm btn-outline-secondary" data-remove-component>제거</button><span th:if="${row.bomComponentId != null}" class="subtle">기존 구성</span></div>
+                </div>
+            </div>
+            <template id="component-template">
+                <div class="bom-component-row" data-component-row>
+                    <div class="bom-material-field"><label class="form-label">원자재 <span data-row-number></span> <span class="required-mark">*</span></label>
+                        <input type="hidden" data-field="bomComponentId">
+                        <select class="form-select" data-field="materialItemId" required><option value="">원자재 선택</option>
+                            <option th:each="item : ${materials}" th:if="${item.isActive == 1 and item.itemKind == 'RAW'}" th:value="${item.itemId}" th:attr="data-unit=${item.unitCode}" th:text="${item.itemCode + ' · ' + item.itemName + ' (' + item.unitCode + ')'}"></option>
+                        </select></div>
+                    <div><label class="form-label">기준 소요량 <span class="required-mark">*</span></label><input class="form-control" type="text" inputmode="decimal" data-field="requiredQty" required maxlength="64" pattern="[0-9]+([.][0-9]{1,6})?" placeholder="0보다 큰 수량"></div>
+                    <div class="bom-row-action"><button type="button" class="btn btn-sm btn-outline-secondary" data-remove-component>제거</button></div>
+                </div>
+            </template>
+            <div class="form-actions"><a class="btn btn-outline-secondary" th:href="${mode == 'edit'} ? @{/boms/versions/{id}(id=${versionId})} : @{/boms}" th:text="${mode == 'edit' ? '상세 다시 조회' : '취소'}"></a><button class="btn btn-primary" type="submit" th:text="${mode == 'edit' ? '변경사항 저장' : 'BOM 버전 등록'}"></button></div>
+        </form>
+    </section>
+    <p class="form-text mt-3">BOM은 예상 소요량의 기준입니다. 실제 소비량을 입력하거나 자동 보정하지 않습니다. 작성자는 서버 설정을 사용합니다.</p>
+    <script defer th:src="@{/js/bom.js}"></script>
+</main></body></html>

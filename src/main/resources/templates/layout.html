@@ -18,8 +18,8 @@
         </a>
         <nav class="side-nav">
             <div class="nav-heading">기준정보 <span>MASTER DATA</span></div>
-            <a class="menu-item active" th:href="@{/items}" aria-current="page"><span class="menu-code">01</span>품목 관리</a>
-            <span class="menu-item unavailable" aria-disabled="true"><span class="menu-code">02</span>BOM 관리<small>준비 중</small></span>
+            <a class="menu-item" th:classappend="${activeMenu != 'boms' ? 'active' : ''}" th:href="@{/items}" th:attr="aria-current=${activeMenu != 'boms' ? 'page' : null}"><span class="menu-code">01</span>품목 관리</a>
+            <a class="menu-item" th:classappend="${activeMenu == 'boms' ? 'active' : ''}" th:href="@{/boms}" th:attr="aria-current=${activeMenu == 'boms' ? 'page' : null}"><span class="menu-code">02</span>BOM 관리</a>
             <span class="menu-item unavailable" aria-disabled="true"><span class="menu-code">03</span>공정 관리<small>준비 중</small></span>
             <span class="menu-item unavailable" aria-disabled="true"><span class="menu-code">04</span>Routing 관리<small>준비 중</small></span>
             <div class="nav-heading">생산관리 <span>PRODUCTION</span></div>

@@ -1,6 +1,8 @@
 package com.taehyung.mes.common.web;
 
 import com.taehyung.mes.item.ItemNotFoundException;
+import com.taehyung.mes.bom.BomNotFoundException;
+import org.springframework.beans.InvalidPropertyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -13,6 +15,26 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class PageExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(PageExceptionHandler.class);
+
+    @ExceptionHandler(BomNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String bomNotFound(Model model) {
+        model.addAttribute("safeTitle", "BOM을 찾을 수 없습니다");
+        model.addAttribute("safeMessage", "BOM 목록에서 대상 버전을 다시 선택해 주세요.");
+        model.addAttribute("returnToBoms", true);
+        model.addAttribute("activeMenu", "boms");
+        return "error";
+    }
+
+    @ExceptionHandler(InvalidPropertyException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String invalidForm(Model model) {
+        model.addAttribute("safeTitle", "입력 형식을 확인해 주세요");
+        model.addAttribute("safeMessage", "구성행 입력 형식이나 허용 개수를 벗어났습니다. 목록에서 다시 등록해 주세요.");
+        model.addAttribute("returnToBoms", true);
+        model.addAttribute("activeMenu", "boms");
+        return "error";
+    }
 
     @ExceptionHandler(ItemNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)

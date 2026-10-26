@@ -18,7 +18,8 @@
         if (event.matches) setMenuOpen(false);
     });
     document.querySelectorAll('[data-save-form]').forEach((form) => {
-        form.addEventListener('submit', () => {
+        form.addEventListener('submit', (event) => {
+            if (event.defaultPrevented) return;
             form.querySelector('button[type="submit"]').disabled = true;
         });
     });
