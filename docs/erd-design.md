@@ -65,7 +65,7 @@ Traceability는 위 FK의 조회 모델로 표현하며 별도 `lot_trace` 복�
 | Item → BOM → BOMVersion → BOMComponent | 각각 1 : 0..N | 구성 확정 시 유효 구성 필요. 최소 행수·버전 발행 규칙은 별도 정책 |
 | Item → BOMComponent | 1 : 0..N | 구성 원자재 식별. 현재 품목 상태로 과거 사용을 제거하지 않음 |
 | Item → Routing → RoutingRevision → RoutingStep | 각각 1 : 0..N | Revision은 적용 공정 구성의 보존 단위 |
-| Process → RoutingStep | 1 : 0..N | 공정 재사용 가능 |
+| Process → RoutingStep | 1 : 0..N | 공정 재사용 가능. BR-08: 공정 PK·코드와 기존 명칭 스냅샷 보존, 미사용 전환으로 기존 Step 변경 없음 |
 | Item → ProductionPlan | 1 : 0..N | 계획의 생산 품목 |
 | ProductionPlan → WorkOrder | 1 : 0..N | 작업지시는 정확히 한 계획 참조. 초과 배분은 정책 미확정 |
 | BOMVersion / RoutingRevision → WorkOrder | 각각 1 : 0..N | 작업지시는 각각 정확히 한 적용 버전 참조 |
@@ -300,9 +300,9 @@ ITEM, WORK_ORDER, BOM_COMPONENT, REQUEST_RECEIPT, FINISHED_GOODS_LOT는 이전 �
 | Process | PK, 업무 코드 UK 후보 | 이번 품목 화면 보완에서 타 도메인 정책 변경 없음 |
 | BOMVersion | bom_id FK, (bom_id, version_no) UK | 적용 버전의 구성·단위·기준량 보존 |
 | BOMComponent | version FK, item FK, (version, line_no) UK | 2026-10-26 신규/편집 BOM은 동일 품목 중복 금지(BR-07). 기존 스키마는 유지하고 부모 잠금과 Service 검증 적용. 품목별 예상량은 구성행 합산 |
-| RoutingRevision / Step | routing FK, (routing, revision_no) UK / revision·process FK, (revision, step_no) UK | 병렬·반복 공정 정책을 추가하지 않음 |
-| ProductionPlan | product_item_id FK | 계획번호 UK 후보, 상태·변경·취소 정책은 미확정 |
-| WorkOrder | plan·item·BOMVersion·RoutingRevision FK | 생성 시 제품 일치 검증. 계획의 제품 변경으로 작업지시 제품이 바뀌지 않도록 적용 product_item_id 보존 |
+| RoutingRevision / Step | routing FK, (routing, revision_no) UK / revision·process FK, (revision, step_no) UK | BR-09: 등록·개정 추가·조회, 잠근 공정의 현재 명칭 스냅샷. 저장 개정 직접 수정은 미확정으로 제외. 병렬·반복 실행 정책을 추가하지 않음 |
+| ProductionPlan | product_item_id FK | BR-10: 실제 PK ID로 등록·조회·검색. 현행 계획코드/상태/업무 UK 없음. 변경·취소 정책은 미확정이며 직접 수정·삭제 없음 |
+| WorkOrder | plan·item·BOMVersion·RoutingRevision FK | BR-11: 제품 일치·양의 정수·현재 공정 활성 검증, 최초 사용과 지시 원자 저장. product_item_id·버전 PK 보존. 시작/시작 전 취소 제공 |
 | FinishedGoodsLot | work_order_id NOT NULL FK + UK | LOT 번호 유일성 범위와 번호 채번은 미확정. work_order_id의 NULL로 UK를 우회하지 않음 |
 | ProductionResult | finished_lot FK, receipt FK + UK | 실적-LOT의 동일 작업지시 귀속은 단일 FK 경로로 표현 |
 | ResultCorrection | result FK, (result, to_revision) UK | 현재 revision과 이전·이후 체인의 연속성은 트랜잭션 검증 |

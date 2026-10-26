@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell(${addingRevision ? 'Routing 개정 등록' : 'Routing 등록'}, ~{::main})}">
+<head><title>Routing 등록</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/routings}">← Routing 목록</a>
+    <section class="page-heading"><div><p class="eyebrow">MASTER DATA / ROUTING</p><h1 th:text="${addingRevision ? 'Routing 새 개정 등록' : 'Routing 등록'}"></h1><p class="page-description">완제품의 공정 경로를 입력합니다. 저장된 개정은 보존됩니다.</p></div></section>
+    <section class="panel bom-form-panel">
+        <form method="post" th:object="${routingForm}" th:action="${addingRevision} ? @{/routings/{id}/revisions(id=${routingId})} : @{/routings}" data-save-form data-routing-form th:attr="data-max-steps=${maxSteps}">
+            <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger" role="alert"><strong>저장하지 못했습니다.</strong><ul class="mb-0 mt-1"><li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li></ul></div>
+            <div th:if="${choicesError}" class="alert alert-warning" role="alert" th:text="${choicesError}"></div>
+            <div class="section-heading"><h2>Routing 기본정보</h2><span class="subtle"><span class="required-mark">*</span> 필수 입력</span></div>
+            <div class="row g-4 mb-4">
+                <div class="col-md-4"><label class="form-label" for="routingCode">Routing 코드 <span class="required-mark">*</span></label><input class="form-control code-input" type="text" th:field="*{routingCode}" th:errorclass="is-invalid" th:readonly="${addingRevision}" maxlength="50" pattern="[ -~]+" required placeholder="예: ROUTE-SENSOR"><div class="form-text">전체 Routing에서 유일한 ASCII 코드입니다.</div></div>
+                <div class="col-md-5"><label class="form-label" th:for="${addingRevision ? 'productDisplay' : 'productItemId'}">완제품 <span class="required-mark">*</span></label>
+                    <select th:unless="${addingRevision}" class="form-select" th:field="*{productItemId}" th:errorclass="is-invalid" required><option value="">완제품 선택</option><option th:each="item : ${products}" th:value="${item.itemId}" th:text="${item.itemCode + ' · ' + item.itemName + (item.isActive == 1 ? '' : ' · 미사용')}" th:disabled="${item.isActive != 1 or item.itemKind != 'FINISHED'}"></option>
+                        <option th:if="${routingForm.productItemId != null and selectedProduct == null}" th:value="*{productItemId}" th:text="${'품목 ID: ' + routingForm.productItemId + ' (조회 불가)'}"></option></select>
+                    <div th:if="${addingRevision}"><input type="hidden" th:field="*{productItemId}"><input id="productDisplay" class="form-control" readonly th:value="${selectedProduct != null ? selectedProduct.itemCode + ' · ' + selectedProduct.itemName : '품목 ID: ' + routingForm.productItemId}"></div><div class="form-text">신규 개정에는 사용 중인 FINISHED 품목을 참조합니다.</div></div>
+                <div class="col-md-3"><label class="form-label" for="revisionNo">개정 번호 <span class="required-mark">*</span></label><input class="form-control" type="number" th:field="*{revisionNo}" th:errorclass="is-invalid" min="1" max="4294967295" step="1" required placeholder="예: 1"><div class="form-text">같은 Routing 안에서 중복되지 않는 양의 정수입니다.</div></div>
+            </div>
+            <div class="section-heading bom-component-heading"><h2>공정 구성</h2><button class="btn btn-sm btn-outline-primary" type="button" data-add-step>＋ 공정 추가</button></div>
+            <p class="form-text">순서는 중복되지 않는 양의 정수로 입력합니다. 번호 사이의 간격은 허용합니다. 위/아래 이동은 이웃 행의 순번을 서로 바꿉니다.</p>
+            <div class="alert alert-warning" data-step-message role="alert" hidden></div>
+            <div data-steps>
+                <div class="row g-3 align-items-end border-bottom pb-3 mb-3" data-step-row th:each="step, stat : *{steps}">
+                    <div class="col-md-6"><label class="form-label" th:for="${'process-' + stat.index}">공정 <span data-row-number th:text="${stat.count}"></span> <span class="required-mark">*</span></label><select class="form-select" th:id="${'process-' + stat.index}" data-field="processId" th:field="*{steps[__${stat.index}__].processId}" required><option value="">공정 선택</option><option th:each="process : ${processes}" th:value="${process.processId}" th:text="${process.processCode + ' · ' + process.processName + (process.isActive == 1 ? '' : ' · 미사용')}" th:disabled="${process.isActive != 1}"></option><option th:if="${step.processId != null and !processChoices.containsKey(step.processId)}" th:value="${step.processId}" th:text="${'공정 ID: ' + step.processId + ' (조회 불가)'}"></option></select></div>
+                    <div class="col-md-2"><label class="form-label" th:for="${'order-' + stat.index}">순서 <span class="required-mark">*</span></label><input class="form-control" type="number" data-field="stepNo" th:id="${'order-' + stat.index}" th:field="*{steps[__${stat.index}__].stepNo}" min="1" max="4294967295" step="1" required></div>
+                    <div class="col-md-4 d-flex flex-wrap gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-move-up aria-label="공정 위로 이동">위로</button><button type="button" class="btn btn-sm btn-outline-secondary" data-move-down aria-label="공정 아래로 이동">아래로</button><button type="button" class="btn btn-sm btn-outline-secondary" data-remove-step>제거</button></div>
+                </div>
+            </div>
+            <template id="routing-step-template"><div class="row g-3 align-items-end border-bottom pb-3 mb-3" data-step-row>
+                <div class="col-md-6"><label class="form-label">공정 <span data-row-number></span> <span class="required-mark">*</span></label><select class="form-select" data-field="processId" required><option value="">공정 선택</option><option th:each="process : ${processes}" th:if="${process.isActive == 1}" th:value="${process.processId}" th:text="${process.processCode + ' · ' + process.processName}"></option></select></div>
+                <div class="col-md-2"><label class="form-label">순서 <span class="required-mark">*</span></label><input class="form-control" type="number" data-field="stepNo" min="1" max="4294967295" step="1" required></div>
+                <div class="col-md-4 d-flex flex-wrap gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-move-up aria-label="공정 위로 이동">위로</button><button type="button" class="btn btn-sm btn-outline-secondary" data-move-down aria-label="공정 아래로 이동">아래로</button><button type="button" class="btn btn-sm btn-outline-secondary" data-remove-step>제거</button></div>
+            </div></template>
+            <div class="form-actions"><a class="btn btn-outline-secondary" th:href="@{/routings}">취소</a><button class="btn btn-primary" type="submit">Routing 개정 등록</button></div>
+        </form>
+    </section><p class="form-text mt-3">저장 시 활성 공정의 현재 명칭을 서버에서 스냅샷으로 기록합니다. 사용자가 스냅샷이나 작성자를 입력하지 않습니다.</p>
+    <script defer th:src="@{/js/routing.js}"></script>
+</main></body></html>

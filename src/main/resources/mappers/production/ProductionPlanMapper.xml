@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taehyung.mes.production.ProductionPlanMapper">
+    <sql id="columns">p.production_plan_id, p.product_item_id, p.planned_qty, p.planned_date,
+        p.created_at, p.created_by, p.updated_at, i.item_code AS product_code, i.item_name AS product_name, i.unit_code,
+        (SELECT COUNT(*) FROM work_order w WHERE w.production_plan_id = p.production_plan_id) AS work_order_count</sql>
+    <select id="findAll" resultType="com.taehyung.mes.production.ProductionPlan">
+        SELECT <include refid="columns"/> FROM production_plan p JOIN item i ON i.item_id = p.product_item_id
+        <where>
+            <if test="planId != null">AND p.production_plan_id = #{planId}</if>
+            <if test="code != ''">AND LOCATE(#{code}, i.item_code) &gt; 0</if>
+            <if test="name != ''">AND LOCATE(#{name}, i.item_name) &gt; 0</if>
+        </where>
+        ORDER BY p.production_plan_id DESC
+    </select>
+    <select id="findById" resultType="com.taehyung.mes.production.ProductionPlan">
+        SELECT <include refid="columns"/> FROM production_plan p JOIN item i ON i.item_id = p.product_item_id
+        WHERE p.production_plan_id = #{planId}
+    </select>
+    <select id="findProducts" resultType="com.taehyung.mes.item.Item">
+        SELECT item_id, item_code, item_name, item_kind, unit_code, is_active FROM item
+        WHERE item_kind = 'FINISHED' AND is_active = 1 ORDER BY item_code
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="productionPlanId" keyColumn="production_plan_id">
+        INSERT INTO production_plan (product_item_id, planned_qty, planned_date, created_by)
+        VALUES (#{productItemId}, #{plannedQty}, #{plannedDate}, #{createdBy})
+    </insert>
+</mapper>

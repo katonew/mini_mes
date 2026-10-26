@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('공정 관리', ~{::main})}">
+<head><title>공정 관리</title></head>
+<body>
+<main id="main-content">
+    <section class="page-heading">
+        <div><p class="eyebrow">MASTER DATA / PROCESSES</p><h1>공정 관리</h1>
+            <p class="page-description">생산의 기준이 되는 공정을 등록하고 관리합니다.</p></div>
+        <a class="btn btn-primary" th:href="@{/processes/new}"><span aria-hidden="true">＋</span> 공정 등록</a>
+    </section>
+    <section class="panel search-panel" aria-labelledby="search-title">
+        <div class="section-heading"><h2 id="search-title">공정 검색</h2><span class="subtle">코드와 명칭으로 조회</span></div>
+        <form method="get" th:action="@{/processes}" class="row g-3 align-items-end">
+            <div class="col-md-4"><label class="form-label" for="searchCode">공정코드</label>
+                <input class="form-control" id="searchCode" name="code" type="search" maxlength="50" th:value="${code}" placeholder="공정코드 입력"></div>
+            <div class="col-md-5"><label class="form-label" for="searchName">공정명</label>
+                <input class="form-control" id="searchName" name="name" type="search" maxlength="200" th:value="${name}" placeholder="공정명 입력"></div>
+            <div class="col-md-3 search-actions"><a class="btn btn-outline-secondary" th:href="@{/processes}">초기화</a><button class="btn btn-primary" type="submit">검색</button></div>
+        </form>
+        <div th:if="${searchError}" class="alert alert-danger mt-3 mb-0" role="alert" th:text="${searchError}"></div>
+    </section>
+    <section class="panel list-panel" aria-labelledby="list-title">
+        <div class="list-heading"><div class="d-flex align-items-center gap-2"><h2 id="list-title">공정 목록</h2>
+            <span th:if="${searchError == null}" class="count-pill" th:text="${#lists.size(processes)}">0</span></div>
+            <span class="subtle">최신 등록순</span></div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th scope="col">공정코드</th><th scope="col">공정명</th><th scope="col">사용 여부</th><th scope="col" class="text-end">관리</th></tr></thead>
+                <tbody>
+                <tr th:each="process : ${processes}">
+                    <td><a class="item-code" th:href="@{/processes/{id}/edit(id=${process.processId})}" th:text="${process.processCode}"></a></td>
+                    <td class="item-name" th:text="${process.processName}"></td>
+                    <td><span class="status-badge" th:classappend="${process.isActive == 1 ? 'status-active' : 'status-inactive'}" th:text="${process.isActive == 1 ? '사용' : '미사용'}"></span></td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-secondary" th:href="@{/processes/{id}/edit(id=${process.processId})}" th:attr="aria-label=${process.processCode + ' 수정'}">상세·수정</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(processes) and searchError == null}"><td colspan="4" class="empty-state">
+                    <span class="empty-mark" aria-hidden="true">—</span><strong>조회된 공정이 없습니다</strong><p>검색 조건을 변경하거나 새로운 공정을 등록해 주세요.</p>
+                    <a class="btn btn-outline-primary btn-sm" th:href="@{/processes/new}">첫 공정 등록</a></td></tr>
+                <tr th:if="${searchError}"><td colspan="4" class="empty-state">검색 조건을 확인해 주세요.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-note"><span class="note-dot"></span>미사용 공정도 기존 Routing 참조와 공정명 스냅샷을 유지합니다.</div>
+    </section>
+</main>
+</body>
+</html>

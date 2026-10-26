@@ -142,7 +142,7 @@ PK bom_component_id. FK bom_version_id → bom_version, material_item_id → ite
 | is_active | TINYINT UNSIGNED | N | 1 | 사용 여부 |
 | updated_at | DATETIME(6) | N | CURRENT_TIMESTAMP(6) | 갱신시각 |
 
-PK process_id, FK 없음. CHECK is_active IN (0,1). 코드 UK 범위는 승인 후 적용한다. 공정별 실적 저장 기능은 추가하지 않는다.
+PK process_id, 이 테이블의 외향 FK는 없음. 현재 schema.sql의 uq_process_code가 ASCII/ascii_bin 공정코드의 전역 유일성을 보호한다. CHECK is_active IN (0,1). routing_step.process_id가 ON DELETE/UPDATE RESTRICT로 참조한다. BR-08에 따라 코드는 고정하고 명칭·설명·사용 여부만 수정한다. 기존 Routing 공정명 스냅샷을 갱신하지 않으며 공정별 실적 저장 기능은 추가하지 않는다. created_at/created_by는 공통 물리 컬럼 규약대로 신규 등록에만 설정한다.
 
 ### 4.6 routing
 
@@ -152,7 +152,7 @@ PK process_id, FK 없음. CHECK is_active IN (0,1). 코드 UK 범위는 승인 �
 | product_item_id | BIGINT UNSIGNED | N | 없음 | item FK |
 | routing_code | VARCHAR(50), 코드 | N | 없음 | Routing 업무 코드, U? |
 
-PK routing_id, FK product_item_id → item. INDEX ix_routing_product(product_item_id). CHECK 별도 없음. 제품당 Routing 1개 제한은 추가하지 않는다.
+PK routing_id, FK product_item_id → item. 현재 schema.sql의 uq_routing_code로 전역 코드 유일성을 보호한다. INDEX ix_routing_product(product_item_id). CHECK 별도 없음. 제품당 Routing 1개 제한은 추가하지 않는다. BR-09 등록·개정 추가는 활성 FINISHED 품목을 참조하며 헤더 코드·제품을 변경하지 않는다.
 
 ### 4.7 routing_revision
 
@@ -163,7 +163,7 @@ PK routing_id, FK product_item_id → item. INDEX ix_routing_product(product_ite
 | revision_no | INT UNSIGNED | N | 없음 | 헤더 내 Revision 번호 |
 | first_used_at | DATETIME(6) | Y | NULL | 최초 사용 시 불변화 표시 |
 
-PK routing_revision_id, FK routing_id → routing. UK uq_routing_revision(routing_id,revision_no), CHECK revision_no > 0. 작업지시 생성·공정 수정이 같은 Revision 부모 잠금 규약을 사용한다.
+PK routing_revision_id, FK routing_id → routing. UK uq_routing_revision(routing_id,revision_no), CHECK revision_no > 0. BR-09에서는 저장된 개정의 UPDATE/DELETE를 제공하지 않고 새 개정을 등록한다. 향후 개정 직접 편집이 승인되면 작업지시 생성과 같은 Revision 부모 잠금 규약을 사용해야 한다.
 
 ### 4.8 routing_step
 
@@ -187,7 +187,7 @@ PK routing_step_id. FK routing_revision_id → routing_revision, process_id → 
 | planned_date | DATE | N | 없음 | 계획일 |
 | updated_at | DATETIME(6) | N | CURRENT_TIMESTAMP(6) | 갱신시각 |
 
-PK production_plan_id, FK product_item_id → item, INDEX ix_plan_product(product_item_id). CHECK planned_qty >= 0는 최소 비음수 저장 제약 후보이며 0계획 허용 정책은 미확정이다. 추가 상태 enum·계획번호 채번·계획 변경·취소 정책을 임의 추가하지 않는다. 각 작업지시 생성 시 계획·작업지시 제품을 검증하고 이미 연결된 이력이 훼손되지 않도록 한다.
+PK production_plan_id, FK product_item_id → item, INDEX ix_plan_product(product_item_id). 실제 schema.sql의 ck_plan_qty_ea는 planned_qty >= 0과 정수성을 보호한다. BR-10/5차 요청의 신규 등록은 0을 거절해 양의 정수만 허용한다. 코드·상태·BOM/Routing 컬럼 및 업무 UNIQUE는 없으므로 계획 ID/제품으로 검색하고 코드 중복 정책이나 상태를 임의 생성하지 않는다. 변경·취소·삭제는 미확정이므로 조회/등록만 제공한다. work_order.production_plan_id의 RESTRICT FK와 기존 연결을 변경하지 않는다. 작업지시 생성 시 계획·작업지시 제품 일치를 검증해야 한다.
 
 ### 4.10 work_order
 
@@ -447,7 +447,11 @@ FK의 부모 컬럼은 모두 PK를 참조한다. 자식 FK 컬럼의 타입·�
 
 ### 7.2 기준정보 버전 보존
 
-**2026-10-26 BOM 구현 확정 범위:** BR-07에 따라 FINISHED/EA 활성 품목·기준 1 EA·RAW 구성 1개 이상을 등록한다. 사용 전 버전은 기존 소요량 변경과 원자재 추가만 가능하며 제거·교체는 새 버전을 작성한다. BOM 코드·제품·버전 번호는 고정한다. first_used_at 또는 work_order 참조가 있으면 변경을 차단한다. 별도 상태 컬럼·DDL 변경·물리 삭제는 없다. 기존 비-1-EA 버전은 조회만 제공한다. 아래 Routing·작업지시 생성 설명은 해당 기능의 후속 구현 규약이며 이번에 구현하지 않는다.
+**6차 작업지시 구현(BR-11):** READ_COMMITTED에서 Plan → BOM 헤더 → Routing 헤더 → BOMVersion → RoutingRevision → Item(PK순) → Process(PK순)으로 잠근다. 기존 편집/개정 추가의 상대 순서를 유지한다. first_used_at NULL만 기록하고 지시 INSERT와 원자 저장한다. 신규 수량은 1 이상 정수, 현재 미사용 공정 포함 개정은 신규 지시 거부로 확정했다. 시작/취소는 WorkOrder만 잠그며 참조·사용 표시를 변경하지 않는다. 아래 후속 작업지시 설명 중 등록·시작·취소는 현재 구현으로 구체화되었고 생산실적·완료 갱신은 후속 범위다.
+
+**Routing 구현 현황(BR-09):** 등록·새 개정·이력 조회를 제공한다. 미사용 개정 직접 수정 정책은 여전히 미확정이며 이번에 UPDATE/DELETE를 구현하지 않는다. 아래 보존 규약 중 Routing 편집과 작업지시 생성은 향후 구현 시 적용할 사항이다. 새 개정 저장은 Routing 헤더 → Item → Process(PK순) 잠금이며, 신규 헤더는 Item → Process(PK순)이다.
+
+**2026-10-26 BOM 구현 확정 범위:** BR-07에 따라 FINISHED/EA 활성 품목·기준 1 EA·RAW 구성 1개 이상을 등록한다. 사용 전 버전은 기존 소요량 변경과 원자재 추가만 가능하며 제거·교체는 새 버전을 작성한다. BOM 코드·제품·버전 번호는 고정한다. first_used_at 또는 work_order 참조가 있으면 변경을 차단한다. 별도 상태 컬럼·DDL 변경·물리 삭제는 없다. 기존 비-1-EA 버전은 조회만 제공한다. 이 단락은 BOM 구현 당시 범위 기록이며 현재 Routing 등록·조회 구현 범위는 BR-09를 따른다. 작업지시 생성은 후속 범위다.
 
 공유 불변 BOMVersion·RoutingRevision을 추천한다. 작업지시는 정확한 버전 PK를 참조하고 최신 버전을 다시 찾아 연결하지 않는다. 최초 작업지시 생성 시 BOMVersion → RoutingRevision 순으로 배타 행 잠금을 확보하고 제품·단위·구성을 검증한 뒤 first_used_at을 설정한다. 작업지시 삽입과 같은 트랜잭션에서 처리한다. 한번 사용된 버전의 잠금 표시는 취소 후에도 해제하지 않는 추천안이다.
 

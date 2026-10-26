@@ -17,7 +17,7 @@
             <dt class="col-sm-3">BOM 코드 / 버전</dt><dd class="col-sm-9" th:text="${version.bomCode + ' / V' + version.versionNo}"></dd>
             <dt class="col-sm-3">완제품</dt><dd class="col-sm-9" th:text="${version.productCode + ' · ' + version.productName}"></dd>
             <dt class="col-sm-3">기준 생산수량</dt><dd class="col-sm-9" th:text="${version.baseQty.stripTrailingZeros().toPlainString() + ' ' + version.productUnitCode}"></dd>
-            <dt class="col-sm-3">최초 사용 시각 (UTC)</dt><dd class="col-sm-9" th:text="${version.firstUsedAt != null ? #temporals.format(version.firstUsedAt, 'yyyy-MM-dd HH:mm:ss') : (version.used ? '작업지시 참조 있음 · 시각 미기록' : '사용 이력 없음')}"></dd>
+            <dt class="col-sm-3">최초 사용 시각 (KST)</dt><dd class="col-sm-9" th:text="${version.firstUsedAt != null ? @kstDateTimeFormatter.formatUtc(version.firstUsedAt, 'yyyy-MM-dd HH:mm:ss') : (version.used ? '작업지시 참조 있음 · 시각 미기록' : '사용 이력 없음')}"></dd>
         </dl>
     </section>
     <section class="panel list-panel" aria-labelledby="component-title">

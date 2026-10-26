@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell(${editing ? '공정 상세·수정' : '공정 등록'}, ~{::main})}">
+<head><title>공정 등록·수정</title></head><body>
+<main id="main-content">
+    <a class="back-link" th:href="@{/processes}">← 공정 목록</a>
+    <section class="page-heading">
+        <div><p class="eyebrow">MASTER DATA / PROCESSES</p><h1 th:text="${editing ? '공정 상세·수정' : '공정 등록'}"></h1>
+            <p class="page-description">Routing에서 재사용할 공정 기준정보를 관리합니다.</p></div>
+        <span class="step-label" th:text="${editing ? 'EDIT PROCESS' : 'NEW PROCESS'}"></span>
+    </section>
+    <div class="form-layout">
+        <section class="panel">
+            <div class="section-heading"><h2>공정 기본정보</h2><span class="subtle"><span class="required-mark">*</span> 필수 입력</span></div>
+            <form method="post" th:object="${processForm}" th:action="${editing} ? @{/processes/{id}(id=${processId})} : @{/processes}" data-save-form>
+                <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger" role="alert"><strong>저장하지 못했습니다.</strong>
+                    <ul class="mb-0 mt-1"><li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li></ul></div>
+                <div class="mb-4"><label for="processCode" class="form-label">공정코드 <span class="required-mark">*</span></label>
+                    <input class="form-control code-input" type="text" th:field="*{processCode}" th:errorclass="is-invalid" th:readonly="${editing}" required maxlength="50" pattern="[ -~]+" aria-describedby="codeHelp" placeholder="예: ASSEMBLY">
+                    <div id="codeHelp" class="form-text">전체 공정에서 유일한 ASCII 코드이며, 등록 후 변경할 수 없습니다.</div></div>
+                <div class="mb-4"><label for="processName" class="form-label">공정명 <span class="required-mark">*</span></label>
+                    <input class="form-control" type="text" th:field="*{processName}" th:errorclass="is-invalid" required maxlength="200" placeholder="예: 모듈 조립"></div>
+                <div class="mb-4"><label for="description" class="form-label">설명</label>
+                    <textarea class="form-control" th:field="*{description}" th:errorclass="is-invalid" maxlength="500" rows="5" aria-describedby="descriptionHelp" placeholder="공정 설명 입력 (선택)"></textarea>
+                    <div id="descriptionHelp" class="form-text">최대 500자. 현재 기준정보의 설명이며 과거 설명 스냅샷은 제공하지 않습니다.</div></div>
+                <div class="mb-4"><label for="isActive" class="form-label">사용 여부 <span class="required-mark">*</span></label>
+                    <select class="form-select status-select" th:field="*{isActive}" th:errorclass="is-invalid" required><option value="">사용 여부 선택</option><option value="1">사용</option><option value="0">미사용</option></select>
+                    <div class="form-text">미사용 전환은 기존 Routing 참조나 공정명 스냅샷을 변경하지 않습니다.</div></div>
+                <div class="form-actions"><a class="btn btn-outline-secondary" th:href="@{/processes}">목록</a><button class="btn btn-primary" type="submit" th:text="${editing ? '변경사항 저장' : '공정 등록'}"></button></div>
+            </form>
+        </section>
+        <aside class="form-guide" aria-labelledby="guide-title">
+            <span class="guide-label">PROCESS GUIDE</span><h2 id="guide-title">공정 관리 기준</h2>
+            <div class="guide-step"><span>01</span><div><h3>변하지 않는 식별 기준</h3><p>코드는 등록 후 고정하며 명칭·설명·사용 여부만 수정합니다. 공정을 물리 삭제하지 않습니다.</p></div></div>
+            <div class="guide-step"><span>02</span><div><h3>기존 Routing 이력 보존</h3><p>공정명 변경은 현재 명칭에만 반영됩니다. 기존 Routing에 저장된 공정명 스냅샷과 참조는 유지됩니다.</p></div></div>
+            <div class="guide-step"><span>03</span><div><h3>신규 구성과 기존 이력 구분</h3><p>미사용 공정은 향후 신규 Routing 구성에서 제외해야 합니다. 공정의 사용 여부가 Routing 개정의 사용 가능 여부를 의미하지 않습니다.</p></div></div>
+            <p class="guide-footnote">생산 순서는 Routing의 책임입니다. 이 화면에서는 공정 순서·실적·검사를 관리하지 않습니다.</p>
+        </aside>
+    </div>
+</main></body></html>

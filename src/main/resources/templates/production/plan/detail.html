@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('생산계획 상세', ~{::main})}">
+<head><title>생산계획 상세</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/production-plans}">← 생산계획 목록</a><section class="page-heading"><div><p class="eyebrow">PRODUCTION / PLANS</p><h1>생산계획 상세</h1><p class="page-description" th:text="${'계획 ID: ' + plan.productionPlanId}"></p></div></section>
+    <section class="panel search-panel" aria-labelledby="info-title"><div class="section-heading"><h2 id="info-title">생산계획 기본정보</h2><span class="subtle">등록된 계획 조회</span></div>
+        <dl class="row mb-0 bom-summary"><dt class="col-sm-3">계획 ID</dt><dd class="col-sm-9" th:text="${plan.productionPlanId}"></dd><dt class="col-sm-3">완제품</dt><dd class="col-sm-9" th:text="${plan.productCode + ' · ' + plan.productName}"></dd>
+            <dt class="col-sm-3">계획 수량</dt><dd class="col-sm-9" th:text="${plan.plannedQty.stripTrailingZeros().toPlainString() + ' ' + plan.unitCode}"></dd><dt class="col-sm-3">계획일</dt><dd class="col-sm-9" th:text="${#temporals.format(plan.plannedDate, 'yyyy-MM-dd')}"></dd>
+            <dt class="col-sm-3">등록 시각 (KST)</dt><dd class="col-sm-9" th:text="${@kstDateTimeFormatter.formatUtc(plan.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></dd><dt class="col-sm-3">연결된 작업지시</dt><dd class="col-sm-9" th:text="${plan.workOrderCount + '건'}"></dd></dl>
+        <p class="form-text mb-0">변경·취소 정책이 미확정이므로 수정·삭제는 제공하지 않습니다. 작업지시 참조 건수는 계획 상태나 달성률을 의미하지 않습니다.</p>
+    </section><section class="panel search-panel" aria-labelledby="criteria-title"><div class="section-heading"><h2 id="criteria-title">작업지시와의 연결</h2></div><p class="page-description">하나의 생산계획에 여러 작업지시가 연결될 수 있습니다. BOM 버전·Routing 개정은 작업지시에서 지정하며, 계획 등록 단계에서는 확정하지 않습니다.</p></section>
+</main></body></html>

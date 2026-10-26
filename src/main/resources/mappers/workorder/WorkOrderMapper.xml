@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taehyung.mes.workorder.WorkOrderMapper">
+    <sql id="columns">w.work_order_id, w.production_plan_id, w.product_item_id, w.bom_version_id, w.routing_revision_id,
+        w.ordered_qty, w.product_unit_code, w.status, w.created_at, w.created_by, w.started_at, w.started_by,
+        w.cancelled_at, w.cancelled_by, w.completed_at, w.completed_by, w.inspection_target_qty,
+        i.item_code AS product_code, i.item_name AS product_name, b.bom_code, bv.version_no AS bom_version_no,
+        r.routing_code, rv.revision_no AS routing_revision_no</sql>
+    <sql id="joins">FROM work_order w JOIN item i ON i.item_id = w.product_item_id
+        JOIN bom_version bv ON bv.bom_version_id = w.bom_version_id JOIN bom b ON b.bom_id = bv.bom_id
+        JOIN routing_revision rv ON rv.routing_revision_id = w.routing_revision_id JOIN routing r ON r.routing_id = rv.routing_id</sql>
+    <select id="findAll" resultType="com.taehyung.mes.workorder.WorkOrder">
+        SELECT <include refid="columns"/> <include refid="joins"/>
+        <where>
+            <if test="id != null">AND w.work_order_id = #{id}</if>
+            <if test="planId != null">AND w.production_plan_id = #{planId}</if>
+            <if test="keyword != ''">AND (LOCATE(#{keyword}, i.item_code) &gt; 0 OR LOCATE(#{keyword}, i.item_name) &gt; 0)</if>
+            <if test="status != ''">AND w.status = #{status}</if>
+        </where> ORDER BY w.work_order_id DESC
+    </select>
+    <select id="findById" resultType="com.taehyung.mes.workorder.WorkOrder">
+        SELECT <include refid="columns"/> <include refid="joins"/> WHERE w.work_order_id = #{id}
+    </select>
+    <select id="findByIdForUpdate" resultType="com.taehyung.mes.workorder.WorkOrder">
+        SELECT work_order_id, production_plan_id, product_item_id, bom_version_id, routing_revision_id,
+               ordered_qty, product_unit_code, status FROM work_order WHERE work_order_id = #{id} FOR UPDATE
+    </select>
+    <select id="findPlans" resultType="com.taehyung.mes.production.ProductionPlan">
+        SELECT p.production_plan_id, p.product_item_id, p.planned_qty, p.planned_date,
+               i.item_code AS product_code, i.item_name AS product_name, i.unit_code
+        FROM production_plan p JOIN item i ON i.item_id = p.product_item_id ORDER BY p.production_plan_id DESC
+    </select>
+    <select id="findPlan" resultType="com.taehyung.mes.production.ProductionPlan">
+        SELECT p.production_plan_id, p.product_item_id, p.planned_qty, p.planned_date,
+               i.item_code AS product_code, i.item_name AS product_name, i.unit_code
+        FROM production_plan p JOIN item i ON i.item_id = p.product_item_id WHERE p.production_plan_id = #{planId}
+    </select>
+    <select id="findPlanForUpdate" resultType="com.taehyung.mes.production.ProductionPlan">
+        SELECT production_plan_id, product_item_id, planned_qty, planned_date FROM production_plan WHERE production_plan_id = #{planId} FOR UPDATE
+    </select>
+    <select id="findRevisionForUpdate" resultType="com.taehyung.mes.routing.RoutingRevision">
+        SELECT routing_revision_id, routing_id, revision_no, first_used_at FROM routing_revision WHERE routing_revision_id = #{revisionId} FOR UPDATE
+    </select>
+    <select id="findBomOptions" resultType="com.taehyung.mes.workorder.WorkOrderBomOption">
+        SELECT v.bom_version_id, b.bom_code, v.version_no, v.base_qty, v.product_unit_code,
+               (SELECT COUNT(*) FROM bom_component c WHERE c.bom_version_id = v.bom_version_id) AS component_count
+        FROM bom b JOIN bom_version v ON v.bom_id = b.bom_id WHERE b.product_item_id = #{productId} ORDER BY b.bom_id DESC, v.version_no DESC
+    </select>
+    <select id="findRoutingOptions" resultType="com.taehyung.mes.workorder.WorkOrderRoutingOption">
+        SELECT v.routing_revision_id, r.routing_code, v.revision_no,
+               (SELECT COUNT(*) FROM routing_step s WHERE s.routing_revision_id = v.routing_revision_id) AS step_count,
+               (SELECT COUNT(*) FROM routing_step s JOIN manufacturing_process p ON p.process_id = s.process_id
+                WHERE s.routing_revision_id = v.routing_revision_id AND p.is_active = 0) AS inactive_process_count
+        FROM routing r JOIN routing_revision v ON v.routing_id = r.routing_id WHERE r.product_item_id = #{productId}
+        ORDER BY r.routing_id DESC, v.revision_no DESC
+    </select>
+    <select id="findAllocation" resultType="com.taehyung.mes.workorder.WorkOrderAllocation">
+        SELECT p.planned_qty,
+               (SELECT COALESCE(SUM(w.ordered_qty),0) FROM work_order w WHERE w.production_plan_id=p.production_plan_id) AS allocated_qty,
+               (SELECT COALESCE(SUM(w.ordered_qty),0) FROM work_order w WHERE w.production_plan_id=p.production_plan_id AND w.status='CANCELLED') AS cancelled_qty
+        FROM production_plan p WHERE p.production_plan_id=#{planId}
+    </select>
+    <select id="findTotals" resultType="com.taehyung.mes.workorder.WorkOrderTotals">
+        SELECT COUNT(p.production_result_id) AS result_count, COALESCE(SUM(p.produced_qty),0) AS produced_qty,
+               COALESCE(SUM(p.good_qty),0) AS good_qty, COALESCE(SUM(p.defect_qty),0) AS defect_qty
+        FROM finished_goods_lot f JOIN production_result p ON p.finished_lot_id=f.finished_lot_id WHERE f.work_order_id=#{id}
+    </select>
+    <select id="hasExecutionHistory" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM finished_goods_lot WHERE work_order_id=#{id})
+            OR EXISTS(SELECT 1 FROM material_consumption WHERE work_order_id=#{id})
+    </select>
+    <update id="markBomUsed">UPDATE bom_version SET first_used_at=UTC_TIMESTAMP(6) WHERE bom_version_id=#{versionId} AND first_used_at IS NULL</update>
+    <update id="markRoutingUsed">UPDATE routing_revision SET first_used_at=UTC_TIMESTAMP(6) WHERE routing_revision_id=#{revisionId} AND first_used_at IS NULL</update>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="workOrderId" keyColumn="work_order_id">
+        INSERT INTO work_order(production_plan_id,product_item_id,bom_version_id,routing_revision_id,ordered_qty,product_unit_code,status,created_by)
+        VALUES (#{productionPlanId},#{productItemId},#{bomVersionId},#{routingRevisionId},#{orderedQty},#{productUnitCode},'READY',#{createdBy})
+    </insert>
+    <update id="start">UPDATE work_order SET status='IN_PROGRESS', started_at=UTC_TIMESTAMP(6), started_by=#{actor}, updated_at=UTC_TIMESTAMP(6)
+        WHERE work_order_id=#{id} AND status='READY'</update>
+    <update id="cancel">UPDATE work_order SET status='CANCELLED', cancelled_at=UTC_TIMESTAMP(6), cancelled_by=#{actor}, updated_at=UTC_TIMESTAMP(6)
+        WHERE work_order_id=#{id} AND status='READY'</update>
+</mapper>

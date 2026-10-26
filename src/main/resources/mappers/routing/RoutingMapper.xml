@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taehyung.mes.routing.RoutingMapper">
+    <sql id="headerColumns">r.routing_id, r.routing_code, r.product_item_id, r.created_by,
+        i.item_code AS product_code, i.item_name AS product_name</sql>
+    <sql id="revisionColumns">v.routing_revision_id, v.routing_id, v.revision_no, v.first_used_at, v.created_at, v.created_by,
+        r.routing_code, r.product_item_id, i.item_code AS product_code, i.item_name AS product_name,
+        EXISTS(SELECT 1 FROM work_order w WHERE w.routing_revision_id = v.routing_revision_id) AS work_order_referenced</sql>
+    <select id="findAll" resultType="com.taehyung.mes.routing.RoutingRevision">
+        SELECT <include refid="revisionColumns"/>
+        FROM routing_revision v JOIN routing r ON r.routing_id = v.routing_id JOIN item i ON i.item_id = r.product_item_id
+        <where>
+            <if test="code != ''">AND LOCATE(#{code}, i.item_code) &gt; 0</if>
+            <if test="name != ''">AND LOCATE(#{name}, i.item_name) &gt; 0</if>
+        </where>
+        ORDER BY r.routing_id DESC, v.revision_no DESC
+    </select>
+    <select id="findRouting" resultType="com.taehyung.mes.routing.Routing">
+        SELECT <include refid="headerColumns"/> FROM routing r JOIN item i ON i.item_id = r.product_item_id
+        WHERE r.routing_id = #{routingId}
+    </select>
+    <select id="findRoutingForUpdate" resultType="com.taehyung.mes.routing.Routing">
+        SELECT routing_id, routing_code, product_item_id, created_by FROM routing WHERE routing_id = #{routingId} FOR UPDATE
+    </select>
+    <select id="findRevision" resultType="com.taehyung.mes.routing.RoutingRevision">
+        SELECT <include refid="revisionColumns"/>
+        FROM routing_revision v JOIN routing r ON r.routing_id = v.routing_id JOIN item i ON i.item_id = r.product_item_id
+        WHERE v.routing_revision_id = #{revisionId}
+    </select>
+    <select id="findSteps" resultType="com.taehyung.mes.routing.RoutingStep">
+        SELECT s.routing_step_id, s.routing_revision_id, s.process_id, s.step_no, s.process_name_snapshot, s.created_by,
+               p.process_code, p.process_name AS current_process_name, p.is_active
+        FROM routing_step s JOIN manufacturing_process p ON p.process_id = s.process_id
+        WHERE s.routing_revision_id = #{revisionId} ORDER BY s.step_no
+    </select>
+    <select id="findProducts" resultType="com.taehyung.mes.item.Item">
+        SELECT item_id, item_code, item_name, item_kind, unit_code, is_active FROM item
+        WHERE item_kind = 'FINISHED' AND is_active = 1 ORDER BY item_code
+    </select>
+    <select id="findProcesses" resultType="com.taehyung.mes.process.ManufacturingProcess">
+        SELECT process_id, process_code, process_name, is_active FROM manufacturing_process WHERE is_active = 1 ORDER BY process_code
+    </select>
+    <select id="findProcessesByIds" resultType="com.taehyung.mes.process.ManufacturingProcess">
+        SELECT process_id, process_code, process_name, is_active FROM manufacturing_process WHERE process_id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">#{id}</foreach>
+    </select>
+    <select id="existsByCode" resultType="boolean">SELECT EXISTS(SELECT 1 FROM routing WHERE routing_code = #{code})</select>
+    <select id="existsRevision" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM routing_revision WHERE routing_id = #{routingId} AND revision_no = #{revisionNo})
+    </select>
+    <insert id="insertRouting" useGeneratedKeys="true" keyProperty="routingId" keyColumn="routing_id">
+        INSERT INTO routing (product_item_id, routing_code, created_by) VALUES (#{productItemId}, #{routingCode}, #{createdBy})
+    </insert>
+    <insert id="insertRevision" useGeneratedKeys="true" keyProperty="routingRevisionId" keyColumn="routing_revision_id">
+        INSERT INTO routing_revision (routing_id, revision_no, created_by) VALUES (#{routingId}, #{revisionNo}, #{createdBy})
+    </insert>
+    <insert id="insertStep">
+        INSERT INTO routing_step (routing_revision_id, process_id, step_no, process_name_snapshot, created_by)
+        VALUES (#{routingRevisionId}, #{processId}, #{stepNo}, #{processNameSnapshot}, #{createdBy})
+    </insert>
+</mapper>

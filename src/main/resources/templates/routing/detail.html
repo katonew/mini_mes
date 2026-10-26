@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('Routing 상세', ~{::main})}">
+<head><title>Routing 상세</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/routings}">← Routing 목록</a>
+    <section class="page-heading"><div><p class="eyebrow">MASTER DATA / ROUTING</p><h1>Routing 상세</h1><p class="page-description" th:text="${revision.routingCode + ' / R' + revision.revisionNo}"></p></div><a class="btn btn-primary" th:href="@{/routings/{id}/revisions/new(id=${revision.routingId})}">＋ 새 개정 등록</a></section>
+    <section class="panel search-panel" aria-labelledby="info-title">
+        <div class="section-heading"><h2 id="info-title">개정 기본정보</h2><span class="status-badge" th:classappend="${revision.used ? 'status-active' : 'status-inactive'}" th:text="${revision.used ? '사용 이력 있음' : '사용 이력 없음'}"></span></div>
+        <dl class="row mb-0 bom-summary"><dt class="col-sm-3">Routing / 개정</dt><dd class="col-sm-9" th:text="${revision.routingCode + ' / R' + revision.revisionNo}"></dd>
+            <dt class="col-sm-3">완제품</dt><dd class="col-sm-9" th:text="${revision.productCode + ' · ' + revision.productName}"></dd>
+            <dt class="col-sm-3">개정 등록 시각 (KST)</dt><dd class="col-sm-9" th:text="${@kstDateTimeFormatter.formatUtc(revision.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+            <dt class="col-sm-3">최초 사용 시각 (KST)</dt><dd class="col-sm-9" th:text="${revision.firstUsedAt != null ? @kstDateTimeFormatter.formatUtc(revision.firstUsedAt, 'yyyy-MM-dd HH:mm:ss') : (revision.used ? '작업지시 참조 있음 · 시각 미기록' : '사용 이력 없음')}"></dd>
+            <dt class="col-sm-3">작업지시 참조</dt><dd class="col-sm-9" th:text="${revision.workOrderReferenced ? '있음' : '없음'}"></dd>
+            <dt class="col-sm-3">직접 수정</dt><dd class="col-sm-9" th:text="${revision.used ? '사용 이력이 있어 변경할 수 없습니다. 새 개정을 등록해 주세요.' : '미사용 개정의 직접 수정 정책은 미확정입니다. 변경은 새 개정으로 등록해 주세요.'}"></dd></dl>
+    </section>
+    <section class="panel list-panel" aria-labelledby="steps-title"><div class="list-heading"><h2 id="steps-title">공정 경로</h2><span class="subtle">공정 순서 오름차순</span></div>
+        <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">순서</th><th scope="col">공정 코드</th><th scope="col">저장 당시 공정명</th><th scope="col">현재 공정명</th><th scope="col">현재 공정 사용 여부</th></tr></thead>
+            <tbody><tr th:each="step : ${revision.steps}"><td th:text="${step.stepNo}"></td><td class="item-code" th:text="${step.processCode}"></td><td class="item-name" th:text="${step.processNameSnapshot}"></td><td th:text="${step.currentProcessName}"></td><td><span class="status-badge" th:classappend="${step.isActive == 1 ? 'status-active' : 'status-inactive'}" th:text="${step.isActive == 1 ? '사용' : '미사용'}"></span></td></tr>
+            <tr th:if="${#lists.isEmpty(revision.steps)}"><td colspan="5" class="empty-state">등록된 공정이 없습니다.</td></tr></tbody></table></div>
+        <div class="table-note"><span class="note-dot"></span>현재 공정의 명칭·사용 여부가 변경되어도 저장된 공정명과 참조 관계는 유지됩니다.</div>
+    </section>
+</main></body></html>

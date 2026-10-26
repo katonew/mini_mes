@@ -7,7 +7,11 @@
         <p class="eyebrow">REQUEST NOTICE</p>
         <h1 th:text="${safeTitle ?: '요청을 처리하지 못했습니다'}"></h1>
         <p class="page-description" th:text="${safeMessage ?: '주소와 입력값을 확인한 후 다시 시도해 주세요.'}"></p>
-        <a class="btn btn-primary" th:href="${returnToBoms == true or activeMenu == 'boms'} ? @{/boms} : @{/items}"
+        <a th:if="${activeMenu == 'processes'}" class="btn btn-primary" th:href="@{/processes}">공정 목록으로 이동</a>
+        <a th:if="${activeMenu == 'routings'}" class="btn btn-primary" th:href="@{/routings}">Routing 목록으로 이동</a>
+        <a th:if="${activeMenu == 'production-plans'}" class="btn btn-primary" th:href="@{/production-plans}">생산계획 목록으로 이동</a>
+        <a th:if="${activeMenu == 'work-orders'}" class="btn btn-primary" th:href="@{/work-orders}">작업지시 목록으로 이동</a>
+        <a th:unless="${activeMenu == 'processes' or activeMenu == 'routings' or activeMenu == 'production-plans' or activeMenu == 'work-orders'}" class="btn btn-primary" th:href="${returnToBoms == true or activeMenu == 'boms'} ? @{/boms} : @{/items}"
            th:text="${returnToBoms == true or activeMenu == 'boms' ? 'BOM 목록으로 이동' : '품목 목록으로 이동'}"></a>
     </section>
 </main>
