@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('원자재 LOT 등록', ~{::main})}">
+<head><title>원자재 LOT 등록</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/raw-material-lots}">← 원자재 LOT 목록</a><section class="page-heading"><div><p class="eyebrow">LOT / RAW MATERIALS</p><h1>원자재 LOT 등록</h1><p class="page-description">사용 중인 원자재 품목과 LOT 번호, 최초 등록수량을 입력합니다.</p></div><span class="step-label">NEW RAW MATERIAL LOT</span></section>
+    <div class="form-layout"><section class="panel"><div class="section-heading"><h2>원자재 LOT 기본정보</h2><span class="subtle"><span class="required-mark">*</span> 필수 입력</span></div>
+        <form method="post" th:action="@{/raw-material-lots}" th:object="${rawMaterialLotForm}" data-save-form>
+            <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger" role="alert"><strong>저장하지 못했습니다.</strong><ul class="mb-0 mt-1"><li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li></ul></div>
+            <div th:if="${choicesError}" class="alert alert-warning" role="alert" th:text="${choicesError}"></div>
+            <div class="mb-4"><label class="form-label" for="itemId">원자재 품목 <span class="required-mark">*</span></label><select class="form-select" th:field="*{itemId}" th:errorclass="is-invalid" required aria-describedby="itemHelp"><option value="">원자재 선택</option><option th:each="item : ${rawItems}" th:value="${item.itemId}" th:text="${item.itemCode + ' · ' + item.itemName + ' (' + item.unitCode + ')'}"></option><option th:if="${selectionMissing}" th:value="*{itemId}" th:text="${'품목 ID: ' + rawMaterialLotForm.itemId + ' (현재 선택 불가 · 다시 선택해 주세요)'}"></option></select><div class="form-text" id="itemHelp">현재 사용 중인 RAW 품목만 선택할 수 있습니다. 관리단위는 선택한 품목에서 결정됩니다.</div></div>
+            <div class="mb-4"><label class="form-label" for="lotNo">LOT 번호 <span class="required-mark">*</span></label><input class="form-control code-input" type="text" th:field="*{lotNo}" th:errorclass="is-invalid" required maxlength="64" pattern="[ -~]+" aria-describedby="lotHelp" placeholder="예: RM-20261027-001"><div class="form-text" id="lotHelp">표시 가능한 ASCII 1~64자. 원자재 품목이 달라도 동일 번호를 사용할 수 없으며 등록 후 변경할 수 없습니다.</div></div>
+            <div class="mb-4"><label class="form-label" for="registeredQty">최초 등록수량 <span class="required-mark">*</span></label><input class="form-control" type="text" inputmode="decimal" th:field="*{registeredQty}" th:errorclass="is-invalid" required maxlength="64" aria-describedby="qtyHelp" placeholder="예: 100 또는 0.125"><div class="form-text" id="qtyHelp">0보다 큰 수량, 최대 999999999999.999999. EA는 정수, M·G는 소수 6자리까지 허용합니다. 반올림·절삭·단위 환산을 하지 않습니다.</div></div>
+            <div class="form-actions"><a class="btn btn-outline-secondary" th:href="@{/raw-material-lots}">취소</a><button class="btn btn-primary" type="submit">원자재 LOT 등록</button></div>
+        </form>
+    </section><aside class="form-guide" aria-labelledby="guide-title"><span class="guide-label">RAW MATERIAL LOT GUIDE</span><h2 id="guide-title">등록 기준</h2>
+        <div class="guide-step"><span>01</span><div><h3>수량 확정</h3><p>최초 등록수량과 현재 가용수량을 같은 값으로 저장합니다. 등록 후 최초 등록수량은 수정할 수 없습니다.</p></div></div>
+        <div class="guide-step"><span>02</span><div><h3>자동 기록</h3><p>등록 시각과 작성자는 서버에서 기록합니다. 등록 시각은 한국 시간(KST)으로 표시합니다.</p></div></div>
+        <div class="guide-step"><span>03</span><div><h3>등록 결과 확인</h3><p>저장 중 오류가 발생하면 LOT 번호로 목록을 조회한 후 재시도해 주세요.</p></div></div>
+        <p class="guide-footnote">원자재 투입·반환과 재고 조정은 이번 화면에서 제공하지 않습니다.</p>
+    </aside></div>
+</main></body></html>

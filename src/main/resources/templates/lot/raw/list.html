@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('원자재 LOT 관리', ~{::main})}">
+<head><title>원자재 LOT 관리</title></head><body><main id="main-content">
+    <section class="page-heading"><div><p class="eyebrow">LOT / RAW MATERIALS</p><h1>원자재 LOT 관리</h1><p class="page-description">원자재 LOT별 최초 등록수량과 현재 가용수량을 조회합니다.</p></div><a class="btn btn-primary" th:href="@{/raw-material-lots/new}">＋ 원자재 LOT 등록</a></section>
+    <section class="panel search-panel" aria-labelledby="search-title"><div class="section-heading"><h2 id="search-title">원자재 LOT 검색</h2><span class="subtle">LOT 번호와 원자재로 조회</span></div>
+        <form method="get" th:action="@{/raw-material-lots}" class="row g-3 align-items-end">
+            <div class="col-md-3"><label class="form-label" for="searchLotNo">LOT 번호</label><input class="form-control" id="searchLotNo" name="lotNo" type="search" maxlength="64" th:value="${lotNo}" placeholder="LOT 번호 입력"></div>
+            <div class="col-md-3"><label class="form-label" for="searchCode">원자재 코드</label><input class="form-control" id="searchCode" name="code" type="search" maxlength="50" th:value="${code}" placeholder="원자재 코드 입력"></div>
+            <div class="col-md-3"><label class="form-label" for="searchName">원자재 명칭</label><input class="form-control" id="searchName" name="name" type="search" maxlength="200" th:value="${name}" placeholder="원자재 명칭 입력"></div>
+            <div class="col-md-3 search-actions"><a class="btn btn-outline-secondary" th:href="@{/raw-material-lots}">초기화</a><button class="btn btn-primary" type="submit">검색</button></div>
+        </form><div th:if="${searchError}" class="alert alert-danger mt-3 mb-0" role="alert" th:text="${searchError}"></div>
+    </section>
+    <section class="panel list-panel" aria-labelledby="list-title"><div class="list-heading"><div class="d-flex align-items-center gap-2"><h2 id="list-title">원자재 LOT 목록</h2><span class="count-pill" th:if="${searchError == null}" th:text="${#lists.size(lots)}"></span></div><span class="subtle">최신 등록순</span></div>
+        <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">LOT 번호</th><th scope="col">원자재</th><th scope="col">구분 / 단위</th><th scope="col" class="text-end">최초 등록수량</th><th scope="col" class="text-end">현재 가용수량</th><th scope="col">등록 시각 (KST)</th><th scope="col" class="text-end">관리</th></tr></thead>
+            <tbody><tr th:each="lot : ${lots}"><td><a class="item-code" th:href="@{/raw-material-lots/{id}(id=${lot.rawLotId})}" th:text="${lot.lotNo}"></a></td><td class="item-name"><span th:text="${lot.itemName}"></span><small class="d-block subtle" th:text="${lot.itemCode}"></small></td><td th:text="${lot.itemKind + ' / ' + lot.unitCode}"></td>
+                <td class="text-end" th:text="${lot.registeredQty.stripTrailingZeros().toPlainString()}"></td><td class="text-end" th:text="${lot.availableQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${@kstDateTimeFormatter.formatUtc(lot.registeredAt, 'yyyy-MM-dd HH:mm')}"></td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" th:href="@{/raw-material-lots/{id}(id=${lot.rawLotId})}">상세</a></td></tr>
+                <tr th:if="${#lists.isEmpty(lots) and searchError == null}"><td colspan="7" class="empty-state"><span class="empty-mark" aria-hidden="true">—</span><strong>조회된 원자재 LOT이 없습니다</strong><p>검색 조건을 변경하거나 새 LOT을 등록해 주세요.</p><a class="btn btn-outline-primary btn-sm" th:href="@{/raw-material-lots/new}">원자재 LOT 등록</a></td></tr>
+                <tr th:if="${searchError}"><td colspan="7" class="empty-state">검색 조건을 확인해 주세요.</td></tr>
+            </tbody></table></div><div class="table-note"><span class="note-dot"></span>등록 당시 단위를 유지합니다. 현재 가용수량은 화면에서 직접 변경할 수 없습니다.</div>
+    </section>
+</main></body></html>

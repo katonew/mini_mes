@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taehyung.mes.lot.MaterialConsumptionMapper">
+    <sql id="columns">
+        c.consumption_id, c.work_order_id, c.raw_lot_id, c.bom_component_id, c.receipt_id,
+        c.consumed_qty, c.consumed_at, c.created_at, c.created_by, l.lot_no, l.unit_code, l.available_qty,
+        i.item_code, i.item_name, w.status AS work_order_status, b.bom_code, v.version_no AS bom_version_no,
+        (SELECT COALESCE(SUM(r.returned_qty),0) FROM material_return r WHERE r.consumption_id=c.consumption_id) AS returned_qty
+    </sql>
+    <sql id="joins">
+        FROM material_consumption c JOIN raw_material_lot l ON l.raw_lot_id=c.raw_lot_id
+        JOIN item i ON i.item_id=l.item_id JOIN work_order w ON w.work_order_id=c.work_order_id
+        JOIN bom_component bc ON bc.bom_component_id=c.bom_component_id
+        JOIN bom_version v ON v.bom_version_id=bc.bom_version_id JOIN bom b ON b.bom_id=v.bom_id
+    </sql>
+    <select id="findAll" resultType="com.taehyung.mes.lot.MaterialConsumption">
+        SELECT <include refid="columns"/> <include refid="joins"/>
+        <where>
+            <if test="workOrderId != null">AND c.work_order_id=#{workOrderId}</if>
+            <if test="lotNo != ''">AND LOCATE(#{lotNo}, l.lot_no) &gt; 0</if>
+            <if test="keyword != ''">AND (LOCATE(#{keyword}, i.item_code) &gt; 0 OR LOCATE(#{keyword}, i.item_name) &gt; 0)</if>
+        </where> ORDER BY c.consumption_id DESC
+    </select>
+    <select id="findById" resultType="com.taehyung.mes.lot.MaterialConsumption">
+        SELECT <include refid="columns"/>, receipt.initial_outcome_snapshot AS snapshot
+        <include refid="joins"/> JOIN request_receipt receipt ON receipt.receipt_id=c.receipt_id
+        WHERE c.consumption_id=#{consumptionId}
+    </select>
+    <select id="findByReceipt" resultType="com.taehyung.mes.lot.MaterialConsumption">
+        SELECT <include refid="columns"/>, receipt.initial_outcome_snapshot AS snapshot
+        <include refid="joins"/> JOIN request_receipt receipt ON receipt.receipt_id=c.receipt_id
+        WHERE c.receipt_id=#{receiptId}
+    </select>
+    <sql id="orderColumns">
+        w.work_order_id, w.status, w.ordered_qty, w.product_unit_code, w.bom_version_id,
+        i.item_code AS product_code, i.item_name AS product_name, b.bom_code, v.version_no AS bom_version_no
+    </sql>
+    <sql id="orderJoins">
+        FROM work_order w JOIN item i ON i.item_id=w.product_item_id
+        JOIN bom_version v ON v.bom_version_id=w.bom_version_id JOIN bom b ON b.bom_id=v.bom_id
+    </sql>
+    <select id="findWorkOrders" resultType="com.taehyung.mes.workorder.WorkOrder">
+        SELECT <include refid="orderColumns"/> <include refid="orderJoins"/> ORDER BY w.work_order_id DESC
+    </select>
+    <select id="findWorkOrder" resultType="com.taehyung.mes.workorder.WorkOrder">
+        SELECT <include refid="orderColumns"/> <include refid="orderJoins"/> WHERE w.work_order_id=#{workOrderId}
+    </select>
+    <select id="findMaterials" resultType="com.taehyung.mes.lot.MaterialConsumptionMaterial">
+        SELECT bc.bom_component_id, bc.material_item_id, bc.material_unit_code AS unit_code,
+            i.item_code AS material_code, i.item_name AS material_name, bc.required_qty, v.base_qty, w.ordered_qty,
+            (SELECT SUM(bc2.required_qty) FROM bom_component bc2 WHERE bc2.bom_version_id=bc.bom_version_id
+                AND bc2.material_item_id=bc.material_item_id AND bc2.material_unit_code=bc.material_unit_code) AS material_required_qty,
+            (SELECT COALESCE(SUM(c.consumed_qty),0) FROM material_consumption c JOIN raw_material_lot l ON l.raw_lot_id=c.raw_lot_id
+                WHERE c.work_order_id=w.work_order_id AND l.item_id=bc.material_item_id AND l.unit_code=bc.material_unit_code) AS consumed_qty,
+            (SELECT COALESCE(SUM(r.returned_qty),0) FROM material_return r JOIN material_consumption c ON c.consumption_id=r.consumption_id
+                JOIN raw_material_lot l ON l.raw_lot_id=c.raw_lot_id
+                WHERE c.work_order_id=w.work_order_id AND l.item_id=bc.material_item_id AND l.unit_code=bc.material_unit_code) AS returned_qty
+        FROM work_order w JOIN bom_version v ON v.bom_version_id=w.bom_version_id
+        JOIN bom_component bc ON bc.bom_version_id=v.bom_version_id JOIN item i ON i.item_id=bc.material_item_id
+        WHERE w.work_order_id=#{workOrderId} ORDER BY bc.line_no
+    </select>
+    <select id="findLots" resultType="com.taehyung.mes.lot.RawMaterialLot">
+        SELECT l.raw_lot_id, l.item_id, l.lot_no, l.unit_code, l.available_qty, i.item_code, i.item_name
+        FROM work_order w JOIN bom_component bc ON bc.bom_version_id=w.bom_version_id
+        JOIN raw_material_lot l ON l.item_id=bc.material_item_id AND l.unit_code=bc.material_unit_code
+        JOIN item i ON i.item_id=l.item_id
+        WHERE w.work_order_id=#{workOrderId} AND bc.bom_component_id=#{bomComponentId} ORDER BY l.raw_lot_id DESC
+    </select>
+    <select id="findLotForUpdate" resultType="com.taehyung.mes.lot.RawMaterialLot">
+        SELECT raw_lot_id, item_id, unit_code, available_qty, registered_qty FROM raw_material_lot WHERE raw_lot_id=#{rawLotId} FOR UPDATE
+    </select>
+    <update id="decreaseAvailable">
+        UPDATE raw_material_lot SET available_qty=available_qty-#{quantity}, updated_at=UTC_TIMESTAMP(6)
+        WHERE raw_lot_id=#{rawLotId} AND available_qty &gt;= #{quantity} AND #{quantity} &gt; 0
+    </update>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="consumptionId" keyColumn="consumption_id">
+        INSERT INTO material_consumption (work_order_id, raw_lot_id, bom_component_id, receipt_id, consumed_qty, consumed_at, created_by)
+        VALUES (#{workOrderId}, #{rawLotId}, #{bomComponentId}, #{receiptId}, #{consumedQty}, UTC_TIMESTAMP(6), #{createdBy})
+    </insert>
+    <insert id="claimReceipt" useGeneratedKeys="true" keyProperty="receiptId" keyColumn="receipt_id">
+        INSERT INTO request_receipt (scope_key, operation_code, request_key, payload_fingerprint, created_by)
+        VALUES (#{scopeKey}, 'MATERIAL_CONSUME', #{requestKey}, #{payloadFingerprint}, #{createdBy})
+    </insert>
+    <select id="findReceipt" resultType="com.taehyung.mes.lot.MaterialConsumptionReceipt">
+        SELECT receipt_id, scope_key, operation_code, request_key, payload_fingerprint, initial_outcome_snapshot AS snapshot, processed_at, created_by
+        FROM request_receipt WHERE scope_key=#{scopeKey} AND operation_code='MATERIAL_CONSUME' AND request_key=#{requestKey}
+    </select>
+    <update id="finishReceipt">
+        UPDATE request_receipt SET initial_outcome_snapshot=#{snapshot}, processed_at=UTC_TIMESTAMP(6)
+        WHERE receipt_id=#{receiptId} AND operation_code='MATERIAL_CONSUME' AND processed_at IS NULL AND initial_outcome_snapshot IS NULL
+    </update>
+    <select id="countReceiptResults" resultType="int">
+        SELECT (SELECT COUNT(*) FROM material_consumption WHERE receipt_id=#{receiptId})
+             + (SELECT COUNT(*) FROM material_return WHERE receipt_id=#{receiptId})
+             + (SELECT COUNT(*) FROM production_result WHERE receipt_id=#{receiptId})
+             + (SELECT COUNT(*) FROM quality_inspection WHERE receipt_id=#{receiptId})
+    </select>
+</mapper>

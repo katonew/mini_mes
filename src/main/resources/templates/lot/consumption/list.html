@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('원자재 투입 이력', ~{::main})}">
+<head><title>원자재 투입 이력</title></head><body><main id="main-content">
+    <section class="page-heading"><div><p class="eyebrow">PRODUCTION / MATERIAL CONSUMPTIONS</p><h1>원자재 투입 이력</h1><p class="page-description">작업지시별 실제 소비를 조회합니다. 투입 등록은 가용수량을 차감하는 소비 확정입니다.</p></div><a class="btn btn-primary" th:href="@{/material-consumptions/new}">＋ 원자재 투입</a></section>
+    <section class="panel search-panel" aria-labelledby="search-title"><div class="section-heading"><h2 id="search-title">투입 이력 검색</h2></div><form method="get" th:action="@{/material-consumptions}" class="row g-3 align-items-end">
+        <div class="col-md-3"><label class="form-label" for="workOrderId">작업지시 ID</label><input class="form-control" id="workOrderId" name="workOrderId" inputmode="numeric" pattern="[0-9]+" maxlength="19" th:value="${workOrderId}"></div>
+        <div class="col-md-3"><label class="form-label" for="lotNo">원자재 LOT 번호</label><input class="form-control" id="lotNo" name="lotNo" type="search" maxlength="64" th:value="${lotNo}"></div>
+        <div class="col-md-3"><label class="form-label" for="keyword">원자재 코드·명칭</label><input class="form-control" id="keyword" name="keyword" type="search" maxlength="200" th:value="${keyword}"></div>
+        <div class="col-md-3 search-actions"><a class="btn btn-outline-secondary" th:href="@{/material-consumptions}">초기화</a><button class="btn btn-primary" type="submit">검색</button></div>
+    </form><div th:if="${searchError}" class="alert alert-danger mt-3 mb-0" role="alert" th:text="${searchError}"></div></section>
+    <section class="panel list-panel" aria-labelledby="list-title"><div class="list-heading"><div class="d-flex align-items-center gap-2"><h2 id="list-title">실제 소비 목록</h2><span class="count-pill" th:if="${searchError == null}" th:text="${#lists.size(consumptions)}"></span></div><span class="subtle">최신 등록순</span></div>
+        <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">소비 / 작업지시</th><th scope="col">원자재 LOT</th><th scope="col">원자재</th><th scope="col">적용 BOM</th><th scope="col" class="text-end">실제 소비수량</th><th scope="col">소비시각 (KST)</th></tr></thead><tbody>
+        <tr th:each="row : ${consumptions}"><td><a class="item-code" th:href="@{/material-consumptions/{id}(id=${row.consumptionId})}" th:text="${row.consumptionId}"></a><small class="d-block subtle" th:text="${'작업지시 ' + row.workOrderId}"></small></td><td class="item-code" th:text="${row.lotNo}"></td><td class="item-name"><span th:text="${row.itemName}"></span><small class="d-block subtle" th:text="${row.itemCode}"></small></td><td th:text="${row.bomCode + ' V' + row.bomVersionNo}"></td><td class="text-end" th:text="${row.consumedQty.stripTrailingZeros().toPlainString() + ' ' + row.unitCode}"></td><td th:text="${@kstDateTimeFormatter.formatUtc(row.consumedAt, 'yyyy-MM-dd HH:mm')}"></td></tr>
+        <tr th:if="${#lists.isEmpty(consumptions) and searchError == null}"><td colspan="6" class="empty-state"><span class="empty-mark" aria-hidden="true">—</span><strong>조회된 원자재 투입 이력이 없습니다</strong><p>검색 조건을 변경하거나 진행 중인 작업지시에 투입을 등록해 주세요.</p><a class="btn btn-outline-primary btn-sm" th:href="@{/material-consumptions/new}">원자재 투입</a></td></tr>
+        <tr th:if="${searchError}"><td colspan="6" class="empty-state">검색 조건을 확인해 주세요.</td></tr>
+        </tbody></table></div><div class="table-note"><span class="note-dot"></span>실제 소비 원본을 보존합니다. 소비 이력을 직접 수정하거나 삭제하지 않습니다.</div>
+    </section>
+</main></body></html>

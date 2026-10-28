@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('원자재 소비 상세', ~{::main})}">
+<head><title>원자재 소비 상세</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/material-consumptions(workOrderId=${consumption.workOrderId})}">← 작업지시 투입 이력</a><section class="page-heading"><div><p class="eyebrow">PRODUCTION / MATERIAL CONSUMPTIONS</p><h1>원자재 소비 상세</h1><p class="page-description" th:text="${'소비 ' + consumption.consumptionId + ' · ' + consumption.lotNo}"></p></div><a class="btn btn-primary" th:href="@{/material-consumptions/new(workOrderId=${consumption.workOrderId})}">새로운 원자재 투입</a></section>
+    <section class="panel search-panel"><div class="section-heading"><h2>실제 소비 기록</h2></div><dl class="row mb-0 bom-summary">
+        <dt class="col-sm-4">작업지시</dt><dd class="col-sm-8"><a class="item-code" th:href="@{/work-orders/{id}(id=${consumption.workOrderId})}" th:text="${consumption.workOrderId}"></a></dd><dt class="col-sm-4">적용 BOM</dt><dd class="col-sm-8" th:text="${consumption.bomCode + ' V' + consumption.bomVersionNo}"></dd>
+        <dt class="col-sm-4">원자재 LOT</dt><dd class="col-sm-8"><a class="item-code" th:href="@{/raw-material-lots/{id}(id=${consumption.rawLotId})}" th:text="${consumption.lotNo}"></a></dd><dt class="col-sm-4">원자재 코드·명칭</dt><dd class="col-sm-8" th:text="${consumption.itemCode + ' · ' + consumption.itemName}"></dd>
+        <dt class="col-sm-4">실제 소비수량</dt><dd class="col-sm-8" th:text="${consumption.outcome.consumedQty + ' ' + consumption.outcome.unitCode}"></dd><dt class="col-sm-4">소비시각 (KST)</dt><dd class="col-sm-8" th:text="${@kstDateTimeFormatter.formatUtc(consumption.outcome.consumedAt, 'yyyy-MM-dd HH:mm:ss.SSSSSS')}"></dd>
+        <dt class="col-sm-4">소비 당시 차감 전 가용수량</dt><dd class="col-sm-8" th:text="${consumption.outcome.availableBefore + ' ' + consumption.unitCode}"></dd><dt class="col-sm-4">소비 당시 차감 후 가용수량</dt><dd class="col-sm-8" th:text="${consumption.outcome.availableAfter + ' ' + consumption.unitCode}"></dd>
+        <dt class="col-sm-4">현재 LOT 가용수량</dt><dd class="col-sm-8" th:text="${consumption.availableQty.stripTrailingZeros().toPlainString() + ' ' + consumption.unitCode}"></dd><dt class="col-sm-4">이 소비의 누적 반환수량</dt><dd class="col-sm-8" th:text="${consumption.returnedQty.stripTrailingZeros().toPlainString() + ' ' + consumption.unitCode}"></dd>
+    </dl><p class="form-text mb-0">소비 당시 수량은 최초 성공 결과입니다. 이후 소비·반환으로 바뀐 현재 LOT 가용수량과 구분합니다. 같은 요청의 재전송은 최초 결과를 유지하며 소비 원본을 변경하지 않습니다.</p></section>
+</main></body></html>

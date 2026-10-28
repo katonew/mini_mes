@@ -6,6 +6,8 @@ import com.taehyung.mes.process.ProcessNotFoundException;
 import com.taehyung.mes.routing.RoutingNotFoundException;
 import com.taehyung.mes.production.ProductionPlanNotFoundException;
 import com.taehyung.mes.workorder.WorkOrderNotFoundException;
+import com.taehyung.mes.lot.RawMaterialLotNotFoundException;
+import com.taehyung.mes.lot.MaterialConsumptionNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.InvalidPropertyException;
 import org.slf4j.Logger;
@@ -20,6 +22,24 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class PageExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(PageExceptionHandler.class);
+
+    @ExceptionHandler(MaterialConsumptionNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String materialConsumptionNotFound(Model model) {
+        model.addAttribute("safeTitle", "원자재 소비 이력을 찾을 수 없습니다");
+        model.addAttribute("safeMessage", "원자재 투입 이력 목록에서 대상을 다시 선택해 주세요.");
+        model.addAttribute("activeMenu", "material-consumptions");
+        return "error";
+    }
+
+    @ExceptionHandler(RawMaterialLotNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String rawMaterialLotNotFound(Model model) {
+        model.addAttribute("safeTitle", "원자재 LOT을 찾을 수 없습니다");
+        model.addAttribute("safeMessage", "원자재 LOT 목록에서 대상을 다시 선택해 주세요.");
+        model.addAttribute("activeMenu", "raw-material-lots");
+        return "error";
+    }
 
     @ExceptionHandler(WorkOrderNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -78,6 +98,8 @@ public class PageExceptionHandler {
         if (path.equals("/routings") || path.startsWith("/routings/")) { model.addAttribute("activeMenu", "routings"); }
         if (path.equals("/production-plans") || path.startsWith("/production-plans/")) { model.addAttribute("activeMenu", "production-plans"); }
         if (path.equals("/work-orders") || path.startsWith("/work-orders/")) { model.addAttribute("activeMenu", "work-orders"); }
+        if (path.equals("/raw-material-lots") || path.startsWith("/raw-material-lots/")) { model.addAttribute("activeMenu", "raw-material-lots"); }
+        if (path.equals("/material-consumptions") || path.startsWith("/material-consumptions/")) { model.addAttribute("activeMenu", "material-consumptions"); }
         return "error";
     }
 
@@ -103,6 +125,8 @@ public class PageExceptionHandler {
         if (path.equals("/routings") || path.startsWith("/routings/")) { model.addAttribute("activeMenu", "routings"); }
         if (path.equals("/production-plans") || path.startsWith("/production-plans/")) { model.addAttribute("activeMenu", "production-plans"); }
         if (path.equals("/work-orders") || path.startsWith("/work-orders/")) { model.addAttribute("activeMenu", "work-orders"); }
+        if (path.equals("/raw-material-lots") || path.startsWith("/raw-material-lots/")) { model.addAttribute("activeMenu", "raw-material-lots"); }
+        if (path.equals("/material-consumptions") || path.startsWith("/material-consumptions/")) { model.addAttribute("activeMenu", "material-consumptions"); }
         return "error";
     }
 }

@@ -11,7 +11,9 @@
         <a th:if="${activeMenu == 'routings'}" class="btn btn-primary" th:href="@{/routings}">Routing 목록으로 이동</a>
         <a th:if="${activeMenu == 'production-plans'}" class="btn btn-primary" th:href="@{/production-plans}">생산계획 목록으로 이동</a>
         <a th:if="${activeMenu == 'work-orders'}" class="btn btn-primary" th:href="@{/work-orders}">작업지시 목록으로 이동</a>
-        <a th:unless="${activeMenu == 'processes' or activeMenu == 'routings' or activeMenu == 'production-plans' or activeMenu == 'work-orders'}" class="btn btn-primary" th:href="${returnToBoms == true or activeMenu == 'boms'} ? @{/boms} : @{/items}"
+        <a th:if="${activeMenu == 'raw-material-lots'}" class="btn btn-primary" th:href="@{/raw-material-lots}">원자재 LOT 목록으로 이동</a>
+        <a th:if="${activeMenu == 'material-consumptions'}" class="btn btn-primary" th:href="@{/material-consumptions}">원자재 투입 이력으로 이동</a>
+        <a th:unless="${activeMenu == 'processes' or activeMenu == 'routings' or activeMenu == 'production-plans' or activeMenu == 'work-orders' or activeMenu == 'raw-material-lots' or activeMenu == 'material-consumptions'}" class="btn btn-primary" th:href="${returnToBoms == true or activeMenu == 'boms'} ? @{/boms} : @{/items}"
            th:text="${returnToBoms == true or activeMenu == 'boms' ? 'BOM 목록으로 이동' : '품목 목록으로 이동'}"></a>
     </section>
 </main>

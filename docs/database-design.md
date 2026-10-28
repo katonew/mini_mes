@@ -8,6 +8,8 @@
 
 표의 자료형·컬럼·인덱스는 물리 추천안이다. 승인된 업무 정책은 유지하며 미확정 업무 정책은 '설계 결정 필요'로 표시한다. 특히 LOT 번호 유일성 범위, 개별 행 0수량 허용, 원자재 기록 오류 정정, 불량 상세 합계 정책을 임의 확정하지 않는다. 이 문서는 즉시 전체 스키마를 배포해도 된다는 승인 문서가 아니다.
 
+후속 승인 반영: 원자재 LOT 등록은 BR-12, 8차 원자재 실제 소비·Receipt 계약은 BR-13과 10.1.1절로 확정했다. 아래 일반 추천안/미확정 표현은 해당 승인 범위를 제외한 후속 업무에 적용한다. 실제 DDL인 schema.sql은 이번 구현에서 변경하지 않았다.
+
 ## 2. 사용 DB 및 전제조건
 
 ### 2.1 DB·명명·시간
@@ -297,11 +299,12 @@ PK consumption_id. FK work_order_id → work_order, raw_lot_id → raw_material_
 |---|---|---|---|---|
 | return_id | BIGINT UNSIGNED | N | AI | PK |
 | consumption_id | BIGINT UNSIGNED | N | 없음 | 원래 material_consumption FK |
+| receipt_id | BIGINT UNSIGNED | N | 없음 | 기존 schema.sql의 request_receipt FK·UNIQUE. 반환 실행 계약은 후속 결정 |
 | returned_qty | DECIMAL(18,6) | N | 없음 | 실제 반환량 |
 | returned_at | DATETIME(6) | N | 없음 | 물리 반환 업무시각 |
 | reason | VARCHAR(500) | N | 없음 | 실제 반환 사유 |
 
-PK return_id, FK consumption_id → material_consumption. INDEX ix_return_consumption(consumption_id). CHECK returned_qty > 0 추천. LOT·작업지시·품목은 원소비에서 찾고 입력값으로 다른 LOT을 복원하지 않는다. 원소비별 반환합계 상한은 행 잠금과 합계로 검증한다. 기록 오류 정정용 type으로 이 테이블을 재사용하지 않는다.
+PK return_id, FK consumption_id → material_consumption, receipt_id → request_receipt. 기존 DDL의 uq_return_receipt(receipt_id)와 ix_return_consumption(consumption_id), CHECK returned_qty > 0를 따른다. LOT·작업지시·품목은 원소비에서 찾고 입력값으로 다른 LOT을 복원하지 않는다. 원소비별 반환합계 상한은 행 잠금과 합계로 검증한다. 기록 오류 정정용 type으로 이 테이블을 재사용하지 않는다. 이번 소비 구현은 반환을 생성하지 않는다.
 
 ### 4.17 quality_inspection
 
@@ -328,15 +331,15 @@ PK inspection_id, FK finished_lot_id → finished_goods_lot, receipt_id → requ
 |---|---|---|---|---|
 | receipt_id | BIGINT UNSIGNED | N | AI | PK |
 | scope_key | VARCHAR(64), 코드 | N | 없음 | 서버가 결정하는 안정적인 호출 주체 범위 |
-| operation_code | VARCHAR(32), 코드 | N | 없음 | MATERIAL_CONSUME / PRODUCTION_RESULT / QUALITY_INSPECTION |
+| operation_code | VARCHAR(32), 코드 | N | 없음 | 기존 DDL: MATERIAL_CONSUME / MATERIAL_RETURN / PRODUCTION_RESULT / QUALITY_INSPECTION |
 | request_key | VARCHAR(64), 코드 | N | 없음 | 호출자가 재전송 시 유지하는 고유 ID |
 | payload_fingerprint | BINARY(32) | N | 없음 | 정규화된 업무 payload의 SHA-256 요약 추천 |
 | initial_outcome_snapshot | JSON | Y | NULL | 최초 성공 결과의 식별자·수량·revision 등 재응답용 불변 요약 |
 | processed_at | DATETIME(6) | Y | NULL | 성공 처리 완료 시각. DB의 정확한 commit 시각을 뜻하지 않음 |
 
-PK receipt_id, UK uq_request_key(scope_key,operation_code,request_key). 세 키는 모두 NOT NULL이며 ascii_bin으로 비교한다. operation CHECK는 위 세 값, 성공 필드 CHECK는 `(processed_at, outcome)` 모두 NULL이거나 모두 NOT NULL인 조합이다. 트랜잭션 내부 선점 단계의 NULL을 허용하지만 성공 결과 없는 Receipt를 커밋하는 것은 Service에서 금지한다. committed PENDING 상태를 별도 도입하지 않는다.
+PK receipt_id, UK uq_request_key(scope_key,operation_code,request_key). 세 키는 모두 NOT NULL이며 ascii_bin으로 비교한다. operation CHECK는 위 네 값, 성공 필드 CHECK는 `(processed_at, initial_outcome_snapshot)` 모두 NULL이거나 모두 NOT NULL인 조합이다. 트랜잭션 내부 선점 단계의 NULL을 허용하지만 성공 결과 없는 Receipt를 커밋하는 것은 Service에서 금지한다. committed PENDING 상태를 별도 도입하지 않는다.
 
-각 업무 테이블의 receipt FK·UK는 유효 Receipt 참조와 종류별 최대 1개를 보장한다. Receipt가 반드시 하나의 결과를 가지는 조건과 세 종류 중 정확히 하나에만 연결되는 조건은 Service 검증이다. 모든 등록 Service는 operation_code와 결과 종류를 일치시킨다. DB CHECK로 다른 세 테이블을 조회할 수 있다고 가정하지 않는다. 10절에서 scope·재시도 계약을 설명한다.
+각 업무 테이블의 receipt FK·UK는 유효 Receipt 참조와 종류별 최대 1개를 보장한다. Receipt가 반드시 하나의 결과를 가지는 조건과 네 종류 중 정확히 하나에만 연결되는 조건은 Service 검증이다. 모든 등록 Service는 operation_code와 결과 종류를 일치시킨다. DB CHECK로 다른 업무 테이블을 조회할 수 있다고 가정하지 않는다. 10절에서 scope·재시도 계약을 설명한다.
 
 ### 4.19 production_defect — 조건부 후보
 
@@ -565,6 +568,28 @@ request_key는 길이 1~64의 ASCII 영문·숫자·하이픈·밑줄로 제한�
 
 fingerprint는 저장 대상 ID, 작업지시/LOT 식별자, 수량, 업무시각, 작업자 등 실제 의미가 있는 요청 필드를 버전이 정해진 규칙으로 정규화한 후 계산한다. 수량 1과 1.000000, 시간대 표현, 필드 순서 차이는 같은 정규화 값이 되게 한다. 서버가 배정하는 receipt_id·LOT ID·검사 회차 번호는 요청 fingerprint 입력에 섞지 않는다. 입력 검증 후 정규화하며 해시값만 믿고 허용되지 않는 수량을 통과시키지 않는다.
 
+### 10.1.1 8차 원자재 소비 승인 계약 및 구현
+
+- scope_key는 원본 MES_ACTOR_ID UTF-8의 SHA-256 소문자 hex 64자리다. 로그인/권한 도입을 의미하지 않는다. 다른 작성자면 같은 UUID도 별도 범위다. operation은 MATERIAL_CONSUME 서버 상수다.
+- request_key는 신규 GET 화면에서 생성하는 UUID다. GET 기준 조회와 POST 오류에서 동일 키를 보존하며 표준 소문자 UUID로 정규화한다. 다른 소비를 시작할 때만 새 키를 생성한다.
+- fingerprint는 아래 고정 문자열의 UTF-8 SHA-256 32바이트다. 줄바꿈은 LF이며 마지막 줄 뒤 줄바꿈은 없다. ID는 양의 십진 정수, 수량은 BigDecimal.stripTrailingZeros().toPlainString()이다. 입력 양수·범위·scale<=6을 먼저 검증하고 동일 command.quantity를 소비 INSERT에 사용한다.
+
+```text
+MATERIAL_CONSUME:v1
+workOrderId=<작업지시 ID>
+bomComponentId=<BOM 구성 ID>
+rawLotId=<원자재 LOT ID>
+consumedQty=<정규화 수량>
+```
+
+- 서버 생성 소비시각·작성시각·새 Receipt/소비 PK와 현재 재고는 fingerprint에서 제외한다. actor는 scope에 반영한다. 1과 1.000000은 동일하며 1.0000000처럼 소수 6자리를 넘는 입력은 정규화 전에 거부한다.
+- consumed_at은 SQL UTC_TIMESTAMP(6), created_at은 기존 기본값이다. initial_outcome_snapshot은 JSON v1로 `version, consumptionId, workOrderId, bomComponentId, rawLotId, consumedQty, unitCode, consumedAt, availableBefore, availableAfter`를 보존한다. ID는 JSON 정수, 수량은 정규화된 십진 문자열, 소비시각은 UTC `yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'`다. 재고 전후값은 기존 JSON 안의 재응답 자료이며 새 테이블 컬럼이 아니다.
+- 신규 소비는 별도 TransactionService Bean의 REQUIRES_NEW/READ_COMMITTED 프록시에서 Receipt INSERT → WorkOrder FOR UPDATE/상태·적용 BOM 확인 → RawLot FOR UPDATE/품목·단위·가용량 확인 → 조건부 차감 → 소비 INSERT → 성공 JSON/processed_at UPDATE → 결과 종류별 합계 1건 검증을 거친다. 어느 단계든 실패하면 전체 롤백한다. 중간 커밋·자동 부분 재시도는 없다.
+- Receipt INSERT에서 발생한 UNIQUE 충돌만 별도 예외로 트랜잭션 밖에 전달한다. 일반 Service가 이를 받아 같은 Bean의 replay를 외부 프록시 호출한다. replay는 별도 REQUIRES_NEW 읽기 트랜잭션에서 완료 Receipt·fingerprint·소비 FK·최초 성공 JSON을 확인한다. 잘못된 payload·미완성/불일치 기록은 성공 처리하지 않는다. 현재 WorkOrder 상태·LOT 잔고로 최초 성공값을 다시 계산하지 않는다.
+- 신규/재전송 성공은 기존 소비 상세로 리다이렉트한다. 상세의 소비 당시 전후값은 snapshot, 현재 가용수량은 raw_material_lot의 현재값이다. 보존 중 Receipt를 만료·삭제하는 기능을 도입하지 않는다. 실패/커밋 여부 불명확 시 같은 UUID·같은 입력을 유지한다. 잠금 오류 자동 재시도는 없으며 사용자 재전송은 새 트랜잭션이다.
+- 작업지시가 참조한 BOM은 기존 편집 Service가 first_used_at/작업지시 참조로 불변 보호하므로 소비에서 BOM 편집 잠금을 역순 추가하지 않는다. 기존 BOM/WorkOrder/RawLot 업무 규약을 전제로 하며 SQL 직접 변경까지 보장한다고 주장하지 않는다.
+- 등록 화면 기준 조회는 REPEATABLE_READ 읽기 트랜잭션으로 같은 지시/BOM/소비·반환 합계/후보 LOT를 읽는다. POST는 최신 잠금 상태로 재검증한다. 예상량·차이는 BigDecimal로 정확히 계산하고 무한 소수면 정확한 나눗셈 식을 표시한다. 임의 소수 절삭으로 표시 정밀도를 정하지 않는다.
+
 ### 10.2 결과 연결·원자성
 
 1. 권한·요청 형식을 검증하고 요청 키를 선점한다. Receipt 선점과 업무 변경을 별도 커밋하지 않는다.
@@ -591,7 +616,7 @@ fingerprint는 저장 대상 ID, 작업지시/LOT 식별자, 수량, 업무시�
 
 ### 10.4 반환·정정 요청의 남은 재시도 문제
 
-일반 실적 정정은 expected revision으로 오래된 요청의 반복 변경을 차단한다. 실제 반환의 순소비 상한은 중복 요청 자체를 식별하지는 못한다. 실제 20개 반환 요청이 두 번 입력되고 순소비가 충분하면 두 번 모두 상한 이내일 수 있다. 반환까지 Receipt를 확대하는 방식을 추천하지만 이번 기본 명세에 새 operation·FK를 자동 포함하지 않았다. **반환 요청 재전송 계약은 구현 전 기술 설계 결정 필요**이며, 물리 반환과 기록 오류 보정을 섞어서 해결하지 않는다.
+일반 실적 정정은 expected revision으로 오래된 요청의 반복 변경을 차단한다. 실제 반환의 순소비 상한은 중복 요청 자체를 식별하지는 못한다. 실제 20개 반환 요청이 두 번 입력되고 순소비가 충분하면 두 번 모두 상한 이내일 수 있다. 기존 schema.sql에는 MATERIAL_RETURN operation과 material_return.receipt_id FK/UNIQUE가 이미 존재한다. 이번 소비 구현은 이를 변경하거나 반환을 구현하지 않는다. **반환의 구체적인 요청 범위·payload·재응답 계약은 구현 전 기술 설계 결정 필요**이며, 물리 반환과 기록 오류 보정을 섞어서 해결하지 않는다.
 
 ## 11. 주요 조회 구조 및 집계 중복 방지
 
@@ -693,7 +718,7 @@ C도 실제 반환 후 재소비가 일어난 경우만 A+새 소비로 표현�
 1. 추천 MySQL 8.4.x와 SQL mode·문자셋·collation·시간대·Spring 트랜잭션 격리를 실제 환경에서 확인한다. 본 작업에서는 실행하지 않았다.
 2. 조건부 업무 코드·LOT UK를 확정하고, 모든 FK의 이름·타입·지원 인덱스와 상태 CHECK를 DDL로 옮길 준비를 한다. 미확정 상태로 실제 테이블을 먼저 만들지 않는다.
 3. 사용된 버전의 모든 편집 경로가 부모 잠금을 거치도록 설계한다. first_used_at만으로 불변을 보장한다고 가정하지 않는다.
-4. request_receipt의 정확한 scope·정규화 버전·해시·최초 결과 JSON 스키마·응답·보존기간을 확정한다. 반환의 재전송 방지 확대 여부도 구현 전 결정한다.
+4. 원자재 소비는 10.1.1절로 scope·정규화·해시·최초 결과 JSON·응답을 확정했다. 다른 업무의 계약과 향후 보존기간/정리 정책은 별도 결정하며, 소비 Receipt의 자동 삭제는 구현하지 않는다. 반환의 상세 재전송 계약도 구현 전 결정한다.
 5. READ COMMITTED + 부모 잠금에서 최신 합계와 조건부 UPDATE의 영향행수, rollback·데드락 재시도·commit 불확실 재조회 전략을 실제 SQL로 검증할 계획을 세운다.
 6. 기본 테이블 18개와 조건부 2개 후보를 구분하여 구현 범위를 승인받는다. 세부 코드·단위 정책·불량 상세가 확정되지 않은 영역은 구현하지 않는다.
 

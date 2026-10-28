@@ -25,10 +25,10 @@
             <div class="nav-heading">생산관리 <span>PRODUCTION</span></div>
             <a class="menu-item" th:classappend="${activeMenu == 'production-plans' ? 'active' : ''}" th:href="@{/production-plans}" th:attr="aria-current=${activeMenu == 'production-plans' ? 'page' : null}">생산계획</a>
             <a class="menu-item" th:classappend="${activeMenu == 'work-orders' ? 'active' : ''}" th:href="@{/work-orders}" th:attr="aria-current=${activeMenu == 'work-orders' ? 'page' : null}">작업지시</a>
-            <span class="menu-item unavailable" aria-disabled="true">원자재 투입<small>준비 중</small></span>
+            <a class="menu-item" th:classappend="${activeMenu == 'material-consumptions' ? 'active' : ''}" th:href="@{/material-consumptions}" th:attr="aria-current=${activeMenu == 'material-consumptions' ? 'page' : null}">원자재 투입</a>
             <span class="menu-item unavailable" aria-disabled="true">생산실적<small>준비 중</small></span>
             <div class="nav-heading">LOT · 품질 · 추적</div>
-            <span class="menu-item unavailable" aria-disabled="true">원자재 LOT<small>준비 중</small></span>
+            <a class="menu-item" th:classappend="${activeMenu == 'raw-material-lots' ? 'active' : ''}" th:href="@{/raw-material-lots}" th:attr="aria-current=${activeMenu == 'raw-material-lots' ? 'page' : null}">원자재 LOT</a>
             <span class="menu-item unavailable" aria-disabled="true">완제품 LOT<small>준비 중</small></span>
             <span class="menu-item unavailable" aria-disabled="true">불량 관리<small>준비 중</small></span>
             <span class="menu-item unavailable" aria-disabled="true">품질검사<small>준비 중</small></span>

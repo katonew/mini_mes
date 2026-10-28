@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('원자재 LOT 상세', ~{::main})}">
+<head><title>원자재 LOT 상세</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/raw-material-lots}">← 원자재 LOT 목록</a><section class="page-heading"><div><p class="eyebrow">LOT / RAW MATERIALS</p><h1>원자재 LOT 상세</h1><p class="page-description" th:text="${lot.lotNo}"></p></div></section>
+    <section class="panel search-panel" aria-labelledby="info-title"><div class="section-heading"><h2 id="info-title">LOT 기본정보</h2><span class="subtle">등록된 정보 조회</span></div><dl class="row mb-0 bom-summary">
+        <dt class="col-sm-4">LOT 번호</dt><dd class="col-sm-8 item-code" th:text="${lot.lotNo}"></dd><dt class="col-sm-4">원자재 코드·명칭</dt><dd class="col-sm-8" th:text="${lot.itemCode + ' · ' + lot.itemName}"></dd><dt class="col-sm-4">품목구분 / 관리단위</dt><dd class="col-sm-8" th:text="${lot.itemKind + ' / ' + lot.unitCode}"></dd>
+        <dt class="col-sm-4">최초 등록수량</dt><dd class="col-sm-8" th:text="${lot.registeredQty.stripTrailingZeros().toPlainString() + ' ' + lot.unitCode}"></dd><dt class="col-sm-4">현재 가용수량</dt><dd class="col-sm-8" th:text="${lot.availableQty.stripTrailingZeros().toPlainString() + ' ' + lot.unitCode}"></dd>
+        <dt class="col-sm-4">등록 업무시각 (KST)</dt><dd class="col-sm-8" th:text="${@kstDateTimeFormatter.formatUtc(lot.registeredAt, 'yyyy-MM-dd HH:mm:ss.SSSSSS')}"></dd><dt class="col-sm-4">시스템 기록시각 (KST)</dt><dd class="col-sm-8" th:text="${@kstDateTimeFormatter.formatUtc(lot.createdAt, 'yyyy-MM-dd HH:mm:ss.SSSSSS')}"></dd>
+    </dl><p class="form-text mb-0">수량은 등록 당시 관리단위를 기준으로 표시합니다. 품목 코드·명칭은 현재 기준정보입니다. LOT 번호·최초 등록수량·등록 업무시각의 수정 및 LOT 삭제는 제공하지 않습니다.</p></section>
+    <section class="panel search-panel" aria-labelledby="quantity-title"><div class="section-heading"><h2 id="quantity-title">저장된 소비·반환 집계</h2></div>
+        <div th:unless="${lot.quantityConsistent}" class="alert alert-warning" role="alert">저장된 가용수량과 소비·반환 이력의 수량이 일치하지 않거나 반환이 소비를 초과합니다. 원본 이력을 확인해 주세요. 재고를 자동 보정하지 않았습니다.</div>
+        <dl class="row mb-0 bom-summary"><dt class="col-sm-4">누적 소비수량</dt><dd class="col-sm-8" th:text="${lot.consumedQty.stripTrailingZeros().toPlainString() + ' ' + lot.unitCode}"></dd><dt class="col-sm-4">누적 반환수량</dt><dd class="col-sm-8" th:text="${lot.returnedQty.stripTrailingZeros().toPlainString() + ' ' + lot.unitCode}"></dd><dt class="col-sm-4">현재 순소비수량</dt><dd class="col-sm-8" th:text="${lot.netConsumedQty.stripTrailingZeros().toPlainString() + ' ' + lot.unitCode}"></dd></dl>
+        <p class="form-text mb-0">순소비수량 = 누적 소비수량 − 누적 반환수량. 실제 저장된 소비와 원소비에 연결된 반환만 집계합니다. 이력이 없으면 0으로 표시합니다.</p>
+    </section>
+</main></body></html>
