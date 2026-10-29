@@ -13,6 +13,7 @@ import com.taehyung.mes.routing.RoutingStep;
 import com.taehyung.mes.workorder.WorkOrder;
 import com.taehyung.mes.workorder.WorkOrderTotals;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,6 +59,11 @@ public class LotTraceDetails {
     public List<QualityInspection> getInspections() { return inspections; }
     public void setInspections(List<QualityInspection> inspections) { this.inspections = inspections; }
     public List<String> getWarnings() { return warnings; }
+    public String getProductionProgressDisplay() {
+        if (order == null || order.getOrderedQty().signum() <= 0) { return "계산 불가"; }
+        return totals.getProducedQty().multiply(new BigDecimal("100"))
+                .divide(order.getOrderedQty(), 2, RoundingMode.HALF_UP).toPlainString() + "%";
+    }
 
     public static class MaterialUsage {
         private final MaterialConsumption source;

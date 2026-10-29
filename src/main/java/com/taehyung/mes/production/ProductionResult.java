@@ -16,7 +16,7 @@ public class ProductionResult {
     private BigDecimal defectQty;
     private LocalDateTime producedAt;
     private String workerRef;
-    private Integer revisionNo;
+    private Long revisionNo;
     private LocalDateTime createdAt;
     private String createdBy;
     private String snapshot;
@@ -45,8 +45,8 @@ public class ProductionResult {
     public void setProducedAt(LocalDateTime producedAt) { this.producedAt = producedAt; }
     public String getWorkerRef() { return workerRef; }
     public void setWorkerRef(String workerRef) { this.workerRef = workerRef; }
-    public Integer getRevisionNo() { return revisionNo; }
-    public void setRevisionNo(Integer revisionNo) { this.revisionNo = revisionNo; }
+    public Long getRevisionNo() { return revisionNo; }
+    public void setRevisionNo(Long revisionNo) { this.revisionNo = revisionNo; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public String getCreatedBy() { return createdBy; }

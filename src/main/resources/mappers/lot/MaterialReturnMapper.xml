@@ -17,8 +17,8 @@
         <where>
             <if test="workOrderId != null">AND c.work_order_id=#{workOrderId}</if>
             <if test="consumptionId != null">AND r.consumption_id=#{consumptionId}</if>
-            <if test="lotNo != ''">AND LOCATE(#{lotNo},l.lot_no) &gt; 0</if>
-            <if test="keyword != ''">AND (LOCATE(#{keyword},i.item_code) &gt; 0 OR LOCATE(#{keyword},i.item_name) &gt; 0)</if>
+            <if test="lotNo != ''">AND LOCATE(#{lotNo},CONVERT(l.lot_no USING utf8mb4)) &gt; 0</if>
+            <if test="keyword != ''">AND (LOCATE(#{keyword},CONVERT(i.item_code USING utf8mb4)) &gt; 0 OR LOCATE(#{keyword},i.item_name) &gt; 0)</if>
         </where> ORDER BY r.return_id DESC
     </select>
     <select id="findById" resultType="com.taehyung.mes.lot.MaterialReturn">

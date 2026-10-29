@@ -88,6 +88,11 @@ h2 { font-size: 1rem; font-weight: 700; margin: 0; }
 .bom-row-action { padding-bottom: 5px; }
 .bom-summary dt, .bom-summary dd { margin-bottom: 14px; overflow-wrap: anywhere; }
 .bom-summary dt { font-size: .8rem; color: var(--mes-muted); }
+.lot-trace .trace-metric, .lot-trace .quantity-cell { font-variant-numeric: tabular-nums; }
+.lot-trace .quantity-cell { text-align: right; white-space: nowrap; }
+.lot-trace .quantity-emphasis { font-weight: 650; }
+.lot-trace .table .item-code { display: block; min-width: 150px; }
+.lot-trace .table .item-name { display: block; margin-top: 4px; min-width: 130px; }
 @media (max-width: 767px) {
     .bom-component-row { grid-template-columns: minmax(0, 1fr) 65px; }
     .bom-material-field { grid-column: 1 / -1; }

@@ -17,6 +17,8 @@
             <span>mini<span class="brand-light">mes</span><small>MANUFACTURING WORKSPACE</small></span>
         </a>
         <nav class="side-nav">
+            <div class="nav-heading">운영 현황 <span>OPERATIONS</span></div>
+            <a class="menu-item" th:classappend="${activeMenu == 'dashboard' ? 'active' : ''}" th:href="@{/dashboard}" th:attr="aria-current=${activeMenu == 'dashboard' ? 'page' : null}">대시보드</a>
             <div class="nav-heading">기준정보 <span>MASTER DATA</span></div>
             <a class="menu-item" th:classappend="${activeMenu == null or activeMenu == 'items' ? 'active' : ''}" th:href="@{/items}" th:attr="aria-current=${activeMenu == null or activeMenu == 'items' ? 'page' : null}"><span class="menu-code">01</span>품목 관리</a>
             <a class="menu-item" th:classappend="${activeMenu == 'boms' ? 'active' : ''}" th:href="@{/boms}" th:attr="aria-current=${activeMenu == 'boms' ? 'page' : null}"><span class="menu-code">02</span>BOM 관리</a>

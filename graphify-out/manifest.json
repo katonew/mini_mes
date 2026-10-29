@@ -126,10 +126,10 @@
     "semantic_hash": "1a13b6860680d5f259043cb74b7cce26"
   },
   "src/main/java/com/taehyung/mes/common/web/PageExceptionHandler.java": {
-    "mtime": 1793034279.0668805,
-    "seen": 1793171102.0544004,
-    "ast_hash": "82c49e8b89fe4cb84f9a84e091eac36d",
-    "semantic_hash": "82c49e8b89fe4cb84f9a84e091eac36d"
+    "mtime": 1793237488.8397272,
+    "seen": 1793254988.6029193,
+    "ast_hash": "29aff829f8e9a2cad6cdabe816fca1b2",
+    "semantic_hash": ""
   },
   "src/main/java/com/taehyung/mes/item/Item.java": {
     "mtime": 1792734687.3312964,
@@ -480,16 +480,16 @@
     "semantic_hash": "38e0111ab80c1b8d7e125f8124a26ad6"
   },
   "src/main/java/com/taehyung/mes/workorder/WorkOrderController.java": {
-    "mtime": 1792997447.283614,
-    "seen": 1793171102.0544004,
-    "ast_hash": "cac5fbd11d1a34fa48070362c8092022",
-    "semantic_hash": "cac5fbd11d1a34fa48070362c8092022"
+    "mtime": 1793195465.020428,
+    "seen": 1793254988.6269243,
+    "ast_hash": "ad7410c9f25e8bc9b5715fed0d869f67",
+    "semantic_hash": ""
   },
   "src/main/java/com/taehyung/mes/workorder/WorkOrderDetails.java": {
-    "mtime": 1792996754.5610504,
-    "seen": 1793171102.0544004,
-    "ast_hash": "e0ff14d3d51692c857c2c53d321ec28d",
-    "semantic_hash": "e0ff14d3d51692c857c2c53d321ec28d"
+    "mtime": 1793195465.0194275,
+    "seen": 1793254988.6269243,
+    "ast_hash": "5ee3239cfebed221acb33aa3c505b058",
+    "semantic_hash": ""
   },
   "src/main/java/com/taehyung/mes/workorder/WorkOrderForm.java": {
     "mtime": 1792996754.5600486,
@@ -498,10 +498,10 @@
     "semantic_hash": "9fe302e49747255d0bba175020d53889"
   },
   "src/main/java/com/taehyung/mes/workorder/WorkOrderMapper.java": {
-    "mtime": 1792996754.5790544,
-    "seen": 1793171102.0544004,
-    "ast_hash": "d00e78d2ae6f5f7bd93a4e2f7c276829",
-    "semantic_hash": "d00e78d2ae6f5f7bd93a4e2f7c276829"
+    "mtime": 1793195465.0174274,
+    "seen": 1793254988.6279244,
+    "ast_hash": "4215d0c35b72d0625436d447eace661d",
+    "semantic_hash": ""
   },
   "src/main/java/com/taehyung/mes/workorder/WorkOrderNotFoundException.java": {
     "mtime": 1792996754.5780535,
@@ -528,10 +528,10 @@
     "semantic_hash": "2e1816b90a7c5d61e07a148a3129b72f"
   },
   "src/main/java/com/taehyung/mes/workorder/WorkOrderService.java": {
-    "mtime": 1792997447.283614,
-    "seen": 1793171102.0544004,
-    "ast_hash": "9914d07984a8ef0bb0b163dedf22793f",
-    "semantic_hash": "9914d07984a8ef0bb0b163dedf22793f"
+    "mtime": 1793195521.04919,
+    "seen": 1793254988.629925,
+    "ast_hash": "4643cd901f295710778b7cf9fe3e7987",
+    "semantic_hash": ""
   },
   "src/main/java/com/taehyung/mes/workorder/WorkOrderStatus.java": {
     "mtime": 1792996754.5770524,
@@ -744,10 +744,10 @@
     "semantic_hash": "171418ff927db25ce347f1e63b801af4"
   },
   "src/test/java/com/taehyung/mes/workorder/WorkOrderControllerTests.java": {
-    "mtime": 1792997447.282614,
-    "seen": 1793171102.0544004,
-    "ast_hash": "e0b1e4f0dd7d975d03bc4f4a373eb83a",
-    "semantic_hash": "e0b1e4f0dd7d975d03bc4f4a373eb83a"
+    "mtime": 1793234962.6762192,
+    "seen": 1793254988.6484406,
+    "ast_hash": "209a8b03fbf867ae9ba9e65f6ffb53e4",
+    "semantic_hash": ""
   },
   "src/test/java/com/taehyung/mes/workorder/WorkOrderMapperTests.java": {
     "mtime": 1792997523.1145687,
@@ -762,16 +762,16 @@
     "semantic_hash": "6d8e03d8edb710a50234c706d6e8a819"
   },
   "src/test/java/com/taehyung/mes/workorder/WorkOrderServiceTests.java": {
-    "mtime": 1792997523.1155689,
-    "seen": 1793171102.0544004,
-    "ast_hash": "179dd3da535e63101b156a35b4dee3aa",
-    "semantic_hash": "179dd3da535e63101b156a35b4dee3aa"
+    "mtime": 1793195576.149299,
+    "seen": 1793254988.649427,
+    "ast_hash": "d10f8e41043b5605fd1bff66e53c76b3",
+    "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1793164544.3413768,
-    "seen": 1793171102.0544004,
-    "ast_hash": "25f95f95944c324d808cdb5f1583faf7",
-    "semantic_hash": "25f95f95944c324d808cdb5f1583faf7"
+    "mtime": 1793194923.9927113,
+    "seen": 1793254988.649427,
+    "ast_hash": "80654479be4d7f61f224583f030bb97f",
+    "semantic_hash": ""
   },
   "README.md": {
     "mtime": 1792570084.2134695,
@@ -798,22 +798,22 @@
     "semantic_hash": "7bb79f3a73f3926cb9ae29fd66862bfa"
   },
   "docs/business-rules.md": {
-    "mtime": 1793162483.0174863,
-    "seen": 1793171102.0544004,
-    "ast_hash": "6c2b7e141936911913cc8606210a8ac5",
-    "semantic_hash": "6c2b7e141936911913cc8606210a8ac5"
+    "mtime": 1793195632.7978945,
+    "seen": 1793254988.6504278,
+    "ast_hash": "9b976a31cd5eb573b88143a361f63ed1",
+    "semantic_hash": ""
   },
   "docs/database-design.md": {
-    "mtime": 1793162483.0194864,
-    "seen": 1793171102.0544004,
-    "ast_hash": "a7ab0f0dfcdb6619191a345aa8a636f6",
-    "semantic_hash": "a7ab0f0dfcdb6619191a345aa8a636f6"
+    "mtime": 1793195643.9251516,
+    "seen": 1793254988.6504278,
+    "ast_hash": "8db947e5bfdae7c94ebfde2f436b576a",
+    "semantic_hash": ""
   },
   "docs/erd-design.md": {
-    "mtime": 1793162483.0204868,
-    "seen": 1793171102.0544004,
-    "ast_hash": "e76a4addf7f7784e9d589ac9d4949c46",
-    "semantic_hash": "e76a4addf7f7784e9d589ac9d4949c46"
+    "mtime": 1793195643.9261522,
+    "seen": 1793254988.6504278,
+    "ast_hash": "f880c6cd9a41d2043fc538bd0bcbbe33",
+    "semantic_hash": ""
   },
   "docs/material-consumption-verification.md": {
     "mtime": 1793162830.8410606,
@@ -822,10 +822,10 @@
     "semantic_hash": "2edf2ba91e83cb8f3c0bf9c22c945143"
   },
   "docs/mini_mes_prd.md": {
-    "mtime": 1793162573.9619007,
-    "seen": 1793171102.0544004,
-    "ast_hash": "0e771ba72435baeca2062051038ae5ba",
-    "semantic_hash": "0e771ba72435baeca2062051038ae5ba"
+    "mtime": 1793195632.7988946,
+    "seen": 1793254988.6504278,
+    "ast_hash": "c613ca672a5b4aaabacb534c4aa1f4ad",
+    "semantic_hash": ""
   },
   "docs/process-verification.md": {
     "mtime": 1792993405.52155,
@@ -900,10 +900,10 @@
     "semantic_hash": "7893aadb6eafd161b36881ce27af7948"
   },
   "docs/work-order-verification.md": {
-    "mtime": 1792997995.2338536,
-    "seen": 1793171102.0544004,
-    "ast_hash": "5702087c6604dc7cfa65276d401a5162",
-    "semantic_hash": "5702087c6604dc7cfa65276d401a5162"
+    "mtime": 1793195643.9261522,
+    "seen": 1793254988.654428,
+    "ast_hash": "9d8f45c6bcfbacb211ecb4e056d398e9",
+    "semantic_hash": ""
   },
   "src/main/resources/templates/bom/detail.html": {
     "mtime": 1793030663.7688239,
@@ -942,16 +942,16 @@
     "semantic_hash": "95daf5246b98b19fe9d6998b067dedb6"
   },
   "src/main/resources/templates/layout.html": {
-    "mtime": 1793034279.0648794,
-    "seen": 1793171102.0544004,
-    "ast_hash": "d5ea6cd84daa53862e898e0753af6d99",
-    "semantic_hash": "d5ea6cd84daa53862e898e0753af6d99"
+    "mtime": 1793237472.1505568,
+    "seen": 1793254988.6564288,
+    "ast_hash": "8cdbd4715f45559be482bc6d647c099b",
+    "semantic_hash": ""
   },
   "src/main/resources/templates/lot/consumption/detail.html": {
-    "mtime": 1793034279.0638795,
-    "seen": 1793171102.0544004,
-    "ast_hash": "bea6d26d58e4005ae89be9329e7e88ee",
-    "semantic_hash": "bea6d26d58e4005ae89be9329e7e88ee"
+    "mtime": 1793175624.591215,
+    "seen": 1793254988.6564288,
+    "ast_hash": "40b4b6c0cb9cb45c19be06d2efde636f",
+    "semantic_hash": ""
   },
   "src/main/resources/templates/lot/consumption/form.html": {
     "mtime": 1793162422.1280377,
@@ -1032,10 +1032,10 @@
     "semantic_hash": "88c19c255bfb237d4620c87427561291"
   },
   "src/main/resources/templates/workorder/detail.html": {
-    "mtime": 1793034279.06588,
-    "seen": 1793171102.0544004,
-    "ast_hash": "791362e248cdc6f735fd6f5459eed060",
-    "semantic_hash": "791362e248cdc6f735fd6f5459eed060"
+    "mtime": 1793235511.3507175,
+    "seen": 1793254988.6604297,
+    "ast_hash": "dbda497a2493b2ce60e1f72c1b7affbb",
+    "semantic_hash": ""
   },
   "src/main/resources/templates/workorder/form.html": {
     "mtime": 1792997476.0476663,
@@ -1052,7 +1052,517 @@
   "db/schema.sql": {
     "mtime": 1792569597.2451851,
     "seen": 1793171102.0544004,
-    "ast_hash": "09a4100007fe990cbfc2159f2abc5aa2",
-    "semantic_hash": "09a4100007fe990cbfc2159f2abc5aa2"
+    "ast_hash": "",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/dashboard/DashboardController.java": {
+    "mtime": 1793237433.2292674,
+    "seen": 1793254988.6029193,
+    "ast_hash": "5962ee87e8e4b056dbd83a2528039338",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/dashboard/DashboardMapper.java": {
+    "mtime": 1793237433.228267,
+    "seen": 1793254988.6029193,
+    "ast_hash": "d5f4cf4bb0e16c8f650dc417b8c17b04",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/dashboard/DashboardMaterialLots.java": {
+    "mtime": 1793237472.151556,
+    "seen": 1793254988.6029193,
+    "ast_hash": "67c300425f229508b4d2d802820a54bd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/dashboard/DashboardService.java": {
+    "mtime": 1793237433.228267,
+    "seen": 1793254988.6029193,
+    "ast_hash": "aba2ac49efcebcc88ac73c1cb4ce08db",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/dashboard/DashboardSummary.java": {
+    "mtime": 1793237433.2272666,
+    "seen": 1793254988.6029193,
+    "ast_hash": "2272155caabb0aa10944b0bc2ea3fced",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturn.java": {
+    "mtime": 1793175429.9958177,
+    "seen": 1793254988.6179228,
+    "ast_hash": "08b5d6821da50e9354f01404e28b6221",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnCommand.java": {
+    "mtime": 1793175430.1568532,
+    "seen": 1793254988.6179228,
+    "ast_hash": "29f36e9d2cd3578831da68c2ad13605d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnController.java": {
+    "mtime": 1793175623.1748984,
+    "seen": 1793254988.6179228,
+    "ast_hash": "bbb928b8f17d570fd0a0d03e60f812e5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnForm.java": {
+    "mtime": 1793175429.9948177,
+    "seen": 1793254988.6179228,
+    "ast_hash": "ded55ad1f54280ff93e877c24f431ff8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnMapper.java": {
+    "mtime": 1793175521.3121822,
+    "seen": 1793254988.6179228,
+    "ast_hash": "82c1041c67c59187888098135de8d279",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnNotFoundException.java": {
+    "mtime": 1793175429.9978178,
+    "seen": 1793254988.6179228,
+    "ast_hash": "0bf0ca7258080860e8d14a404783ccc6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnOutcome.java": {
+    "mtime": 1793175430.1578536,
+    "seen": 1793254988.6179228,
+    "ast_hash": "3e31621c46a970c3088bc4d2234de7d5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnOutcomeCodec.java": {
+    "mtime": 1793175521.3141825,
+    "seen": 1793254988.6179228,
+    "ast_hash": "dd572de502fb5a2f84550ee559973824",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnReceipt.java": {
+    "mtime": 1793175429.9968183,
+    "seen": 1793254988.6179228,
+    "ast_hash": "834729bc931030f7311290424f9caf2c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnRequestExistsException.java": {
+    "mtime": 1793175429.9988184,
+    "seen": 1793254988.6179228,
+    "ast_hash": "41563026c7dbb9daff02089e2947e412",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnRuleException.java": {
+    "mtime": 1793175429.9968183,
+    "seen": 1793254988.6179228,
+    "ast_hash": "72d2d0518c2a71a0fd2cbd48fcf6bfb7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnService.java": {
+    "mtime": 1793175521.3141825,
+    "seen": 1793254988.6179228,
+    "ast_hash": "868c32b4ac4dda4e44dd44ec7511b0ab",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/lot/MaterialReturnTransactionService.java": {
+    "mtime": 1793175545.269348,
+    "seen": 1793254988.6179228,
+    "ast_hash": "3a906c27da361dbd2a38aa6f336f3a20",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/FinishedGoodsLot.java": {
+    "mtime": 1793195374.2739236,
+    "seen": 1793254988.6219242,
+    "ast_hash": "d901ef99fb18f40f02f9fe564deb8b7a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/FinishedGoodsLotController.java": {
+    "mtime": 1793195447.7548366,
+    "seen": 1793254988.6219242,
+    "ast_hash": "3dc355305fca48954d5ae7b6a22065ba",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResult.java": {
+    "mtime": 1793236494.6889737,
+    "seen": 1793254988.6239238,
+    "ast_hash": "684d8722b73c9061c882896067d7e018",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultCommand.java": {
+    "mtime": 1793236369.9761503,
+    "seen": 1793254988.6239238,
+    "ast_hash": "396aa8e3fe0fa1716dfe74cb178470dc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultController.java": {
+    "mtime": 1793236434.9769523,
+    "seen": 1793254988.6239238,
+    "ast_hash": "db1822f9322b503d3fc12b0c3a72b845",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultCorrection.java": {
+    "mtime": 1793236355.32865,
+    "seen": 1793254988.6239238,
+    "ast_hash": "ce10bd4c52825a47dfa62b797bf5bda5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultCorrectionCommand.java": {
+    "mtime": 1793236369.9771504,
+    "seen": 1793254988.6239238,
+    "ast_hash": "c3aa9d76b54351d4098ceaec54ce8d1f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultCorrectionForm.java": {
+    "mtime": 1793236494.6909742,
+    "seen": 1793254988.6239238,
+    "ast_hash": "1bea92fa382237bb7bdadfdf7690b217",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultForm.java": {
+    "mtime": 1793195374.2693305,
+    "seen": 1793254988.6239238,
+    "ast_hash": "6eb59e4409dfacf4bdac847098b9a525",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultMapper.java": {
+    "mtime": 1793236369.9871528,
+    "seen": 1793254988.6239238,
+    "ast_hash": "af65f13752ac36e6593aaa2931512da4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultNotFoundException.java": {
+    "mtime": 1793195374.270923,
+    "seen": 1793254988.6239238,
+    "ast_hash": "2c97e91e3a9e5e852d726e4fa003d1c7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultOutcome.java": {
+    "mtime": 1793195388.1576192,
+    "seen": 1793254988.6239238,
+    "ast_hash": "d7cf70a95c2f5aa5e2b94abd6b886cba",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultOutcomeCodec.java": {
+    "mtime": 1793236392.054165,
+    "seen": 1793254988.6239238,
+    "ast_hash": "b32ed0789ba3a1b6dff4c27e6c0f7acb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultReceipt.java": {
+    "mtime": 1793195374.2719228,
+    "seen": 1793254988.6239238,
+    "ast_hash": "732c9852250d16d86f9006f4494d8c6d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultRequestExistsException.java": {
+    "mtime": 1793195374.270923,
+    "seen": 1793254988.6239238,
+    "ast_hash": "2d6dd26305e46be391ef8c5dd1283951",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultRuleException.java": {
+    "mtime": 1793195374.2699234,
+    "seen": 1793254988.6239238,
+    "ast_hash": "198a349239450c44ec9822699466ceea",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultService.java": {
+    "mtime": 1793236509.0160065,
+    "seen": 1793254988.6239238,
+    "ast_hash": "b5f3145491f90f13d27e778c54a3f77a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/production/ProductionResultTransactionService.java": {
+    "mtime": 1793236392.0551646,
+    "seen": 1793254988.6239238,
+    "ast_hash": "3116adbb259eaa0463c9deb139707534",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspection.java": {
+    "mtime": 1793235455.4792955,
+    "seen": 1793254988.6239238,
+    "ast_hash": "6a07b55547979d5e4f4ab32aa21a1238",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionCommand.java": {
+    "mtime": 1793235430.3205347,
+    "seen": 1793254988.6239238,
+    "ast_hash": "3ca2c4d0e5eb11ac4bf904b904a12838",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionController.java": {
+    "mtime": 1793235536.770429,
+    "seen": 1793254988.6239238,
+    "ast_hash": "4260f60967d82caf37d4faa8f58997fd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionForm.java": {
+    "mtime": 1793235536.771787,
+    "seen": 1793254988.6239238,
+    "ast_hash": "7bf1985bcec8cb641ac565b1b7aebf99",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionLot.java": {
+    "mtime": 1793235536.7727854,
+    "seen": 1793254988.6239238,
+    "ast_hash": "57667bedccd15a1e248614dcf63170ac",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionMapper.java": {
+    "mtime": 1793235455.631045,
+    "seen": 1793254988.6239238,
+    "ast_hash": "df5eb2592bdbe7832e0867b75a03fef7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionNotFoundException.java": {
+    "mtime": 1793235455.5031867,
+    "seen": 1793254988.6239238,
+    "ast_hash": "c66447c6aa114c5d5db4217a5e9f9660",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionOutcome.java": {
+    "mtime": 1793235430.3205347,
+    "seen": 1793254988.6239238,
+    "ast_hash": "be53704b2ff3efab8d2ad35a18d6dc43",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionOutcomeCodec.java": {
+    "mtime": 1793235430.321535,
+    "seen": 1793254988.6239238,
+    "ast_hash": "6e510736c75543675a8cc1daf42db6fd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionReceipt.java": {
+    "mtime": 1793235455.5001872,
+    "seen": 1793254988.6239238,
+    "ast_hash": "d12dccfc9c92340395f4447e5abb9931",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionRequestExistsException.java": {
+    "mtime": 1793235455.5021865,
+    "seen": 1793254988.6239238,
+    "ast_hash": "6824e80f63d4320d496c7cb1fcbab9a3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionRuleException.java": {
+    "mtime": 1793235455.501187,
+    "seen": 1793254988.6239238,
+    "ast_hash": "9503144796226ba051dc42d198c1e282",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionService.java": {
+    "mtime": 1793235455.6320448,
+    "seen": 1793254988.6239238,
+    "ast_hash": "744f2d3ea49d9c5dbff1987af7f52329",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/quality/QualityInspectionTransactionService.java": {
+    "mtime": 1793235455.631045,
+    "seen": 1793254988.6239238,
+    "ast_hash": "75869afd6750b17d8bd9f06d39165d07",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/trace/LotTraceController.java": {
+    "mtime": 1793235791.4865942,
+    "seen": 1793254988.625924,
+    "ast_hash": "b04de64292f6713a5e02e637870ce7e2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/trace/LotTraceDetails.java": {
+    "mtime": 1793235791.4855943,
+    "seen": 1793254988.625924,
+    "ast_hash": "693c844589c9238839b3e7af4d9e6c54",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/taehyung/mes/trace/LotTraceService.java": {
+    "mtime": 1793235791.4875946,
+    "seen": 1793254988.625924,
+    "ast_hash": "997a4ce2964815acb7001448f9b2d34f",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/lot/MaterialReturnContractTests.java": {
+    "mtime": 1793175885.3140738,
+    "seen": 1793254988.6429281,
+    "ast_hash": "bc77b6faa85c6026261a42f1d61838ba",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/lot/MaterialReturnControllerTests.java": {
+    "mtime": 1793175588.280545,
+    "seen": 1793254988.6429281,
+    "ast_hash": "7c34cd3714bc143cb79836e348302565",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/lot/MaterialReturnMapperTests.java": {
+    "mtime": 1793175776.6635344,
+    "seen": 1793254988.6429281,
+    "ast_hash": "30b97df1dbad3413a0c9672739c74b13",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/lot/MaterialReturnMysqlIntegrationTests.java": {
+    "mtime": 1793192422.7572534,
+    "seen": 1793254988.6429281,
+    "ast_hash": "0e26d4d5a06531aeeee2bfd28545559f",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/lot/MaterialReturnServiceTests.java": {
+    "mtime": 1793175468.2609825,
+    "seen": 1793254988.6429281,
+    "ast_hash": "e82a6a585bf76b70fc5a37156008bffb",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/production/ProductionResultContractTests.java": {
+    "mtime": 1793195555.481648,
+    "seen": 1793254988.6474147,
+    "ast_hash": "6f8aec685bb43a5a3b58cc7796a5d504",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/production/ProductionResultControllerTests.java": {
+    "mtime": 1793236459.3812938,
+    "seen": 1793254988.6474147,
+    "ast_hash": "c01343ee74f3950dc6ff1b9bba7f34f4",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/production/ProductionResultMapperTests.java": {
+    "mtime": 1793236494.6899748,
+    "seen": 1793254988.6474147,
+    "ast_hash": "065ce0e875276734df02c94df34ec510",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/production/ProductionResultMysqlIntegrationTests.java": {
+    "mtime": 1793195606.0719311,
+    "seen": 1793254988.6474147,
+    "ast_hash": "5697a1d250181d176ba5dbe2d2232e78",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/taehyung/mes/production/ProductionResultServiceTests.java": {
+    "mtime": 1793236494.6889737,
+    "seen": 1793254988.6474147,
+    "ast_hash": "f761c539d3e56b5087ace3658aa4e445",
+    "semantic_hash": ""
+  },
+  "docs/material-return-verification.md": {
+    "mtime": 1793192470.1730127,
+    "seen": 1793254988.6504278,
+    "ast_hash": "7490e543718efbe9d169754530c287da",
+    "semantic_hash": ""
+  },
+  "docs/production-result-verification.md": {
+    "mtime": 1793234962.6752195,
+    "seen": 1793254988.651428,
+    "ast_hash": "ee2497ab6e17459495d30b53a1023a25",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-28-material-return.md": {
+    "mtime": 1793192486.3835552,
+    "seen": 1793254988.654428,
+    "ast_hash": "89b53606b30845050404b4f7852e3d35",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-10-28-material-return-design.md": {
+    "mtime": 1793175379.2817285,
+    "seen": 1793254988.654428,
+    "ast_hash": "e249e696b1e590dc8412cfa9fc3933f4",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/dashboard.html": {
+    "mtime": 1793237490.3940148,
+    "seen": 1793254988.6554286,
+    "ast_hash": "8edcfa57bcd7dcfaf46f125c005e3568",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/lot/return/detail.html": {
+    "mtime": 1793175672.6979573,
+    "seen": 1793254988.6574287,
+    "ast_hash": "0243d88480c8febfa69811039532dac8",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/lot/return/form.html": {
+    "mtime": 1793175672.6969576,
+    "seen": 1793254988.6574287,
+    "ast_hash": "c1fcdc382d7fa6ba6eb5f9d848d584ba",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/lot/return/list.html": {
+    "mtime": 1793175672.6979573,
+    "seen": 1793254988.6574287,
+    "ast_hash": "5ab18d0398aa6883b16f408c927df5fe",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/production/finished-lot/detail.html": {
+    "mtime": 1793235825.3475378,
+    "seen": 1793254988.6574287,
+    "ast_hash": "acbd391429d169cdd0a89a770d267c7f",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/production/finished-lot/list.html": {
+    "mtime": 1793195509.0087428,
+    "seen": 1793254988.6574287,
+    "ast_hash": "af78c45251b27f40d7903da87893843f",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/production/result/correction-form.html": {
+    "mtime": 1793236434.9789524,
+    "seen": 1793254988.6594293,
+    "ast_hash": "d424f86e535bb78561a2ec39014bc527",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/production/result/correction-fragments.html": {
+    "mtime": 1793236434.9769523,
+    "seen": 1793254988.6594293,
+    "ast_hash": "a89365856d8db552005d7c2f020517e6",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/production/result/correction-history.html": {
+    "mtime": 1793236434.9779518,
+    "seen": 1793254988.6594293,
+    "ast_hash": "d979735d480bd899483dc9e43e8e73c3",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/production/result/detail.html": {
+    "mtime": 1793236434.9789524,
+    "seen": 1793254988.6594293,
+    "ast_hash": "08837cf85f4c2c95c9f48b5451013226",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/production/result/form.html": {
+    "mtime": 1793195509.0067422,
+    "seen": 1793254988.6594293,
+    "ast_hash": "c09698daae1c2b191da0c3b0208af351",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/production/result/list.html": {
+    "mtime": 1793195509.0067422,
+    "seen": 1793254988.6594293,
+    "ast_hash": "c37f069a9a8bf6247cd0a887a4d5fd4f",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/quality/detail.html": {
+    "mtime": 1793235501.4609265,
+    "seen": 1793254988.6594293,
+    "ast_hash": "72bf1b4ba7fba6fab4fed3c85fbb39d8",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/quality/form.html": {
+    "mtime": 1793235536.77171,
+    "seen": 1793254988.6594293,
+    "ast_hash": "de5df78ceb51283e6fbeeba7ca49013a",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/quality/fragments.html": {
+    "mtime": 1793235501.4579265,
+    "seen": 1793254988.6594293,
+    "ast_hash": "05cac423b186e48f7828bb25eeccc20c",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/quality/history.html": {
+    "mtime": 1793235501.4609265,
+    "seen": 1793254988.6594293,
+    "ast_hash": "7d0affaaab546b121aa5608eb0610d0f",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/quality/list.html": {
+    "mtime": 1793235501.4579265,
+    "seen": 1793254988.6594293,
+    "ast_hash": "f1dae0947ae2652bde5f8709b2c94b76",
+    "semantic_hash": ""
+  },
+  "src/main/resources/templates/trace/detail.html": {
+    "mtime": 1793235825.3475378,
+    "seen": 1793254988.6604297,
+    "ast_hash": "7499d317f14119efaff2bfdf45e671ab",
+    "semantic_hash": ""
   }
 }

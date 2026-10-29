@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('생산 현황 대시보드', ~{::main})}"><head><title>생산 현황 대시보드</title></head><body><main id="main-content">
+    <section class="page-heading"><div><p class="eyebrow">OPERATIONS / DASHBOARD</p><h1>생산 현황</h1><p class="page-description">등록된 전체 기간의 생산·검사·계획·원자재 LOT 현황입니다. 페이지 내 조회는 하나의 읽기 전용 트랜잭션으로 수행합니다.</p></div><a class="btn btn-outline-primary" th:href="@{/dashboard}">새로 조회</a></section>
+    <div th:if="${!#lists.isEmpty(warnings)}" class="alert alert-warning" role="alert"><strong>데이터 정합성 확인 필요</strong><ul class="mb-0 mt-1"><li th:each="warning : ${warnings}" th:text="${warning}"></li></ul></div>
+
+    <section class="mb-4" aria-labelledby="ordersHeading"><div class="section-heading"><h2 id="ordersHeading">작업지시 현황</h2><a th:href="@{/work-orders}">전체 작업지시</a></div><div class="row row-cols-1 row-cols-sm-2 row-cols-xl-5 g-3">
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">전체 작업지시</p><a class="fs-3 fw-semibold" th:href="@{/work-orders}" th:text="${summary.workOrderCount + '건'}"></a></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">READY · 준비</p><a class="fs-3 fw-semibold" th:href="@{/work-orders(status='READY')}" th:text="${summary.readyCount + '건'}"></a></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">IN_PROGRESS · 진행 중</p><a class="fs-3 fw-semibold" th:href="@{/work-orders(status='IN_PROGRESS')}" th:text="${summary.inProgressCount + '건'}"></a></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">COMPLETED · 생산 완료</p><a class="fs-3 fw-semibold" th:href="@{/work-orders(status='COMPLETED')}" th:text="${summary.completedCount + '건'}"></a></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">CANCELLED · 취소</p><a class="fs-3 fw-semibold" th:href="@{/work-orders(status='CANCELLED')}" th:text="${summary.cancelledCount + '건'}"></a></div></div>
+    </div></section>
+
+    <section class="mb-4" aria-labelledby="productionHeading"><div class="section-heading"><h2 id="productionHeading">누적 생산 현황</h2><a th:href="@{/production-results}">생산실적 조회</a></div><div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3">
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">생산수량</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.producedQty.stripTrailingZeros().toPlainString() + ' EA'}"></p></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">생산 양품수량</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.goodQty.stripTrailingZeros().toPlainString() + ' EA'}"></p></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">생산 불량수량</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.defectQty.stripTrailingZeros().toPlainString() + ' EA'}"></p></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">생산 양품률</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.productionYieldDisplay}"></p></div></div>
+    </div><p class="form-text">진행 중·완료 작업지시의 현재 유효 실적만 합산합니다. 정정 이력은 더하지 않습니다. 양품률 = 생산 양품 ÷ 생산수량 × 100. 생산량 0은 집계 대상 없음으로 표시합니다.</p></section>
+
+    <section class="mb-4" aria-labelledby="qualityHeading"><div class="section-heading"><h2 id="qualityHeading">최종 품질검사 현황</h2><a th:href="@{/quality-inspections}">품질검사 조회</a></div><div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">누적 검사수량</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.inspectedQty.stripTrailingZeros().toPlainString() + ' EA'}"></p></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">검사 합격수량</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.acceptedQty.stripTrailingZeros().toPlainString() + ' EA'}"></p></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">검사 불합격수량</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.rejectedQty.stripTrailingZeros().toPlainString() + ' EA'}"></p></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">검사 합격률</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.inspectionYieldDisplay}"></p></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">완료 작업지시의 확정 검사 대상</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.inspectionTargetQty.stripTrailingZeros().toPlainString() + ' EA'}"></p></div></div>
+        <div class="col"><div class="panel p-4 h-100"><p class="subtle">완료 작업지시의 미검사수량</p><p class="fs-3 fw-semibold mb-0 text-break" th:text="${summary.uninspectedQtyDisplay}"></p></div></div>
+    </div><p class="form-text">검사 합격률 = 검사 합격 ÷ 검사수량 × 100. 미검사수량은 완료 작업지시별 확정 검사 대상에서 해당 LOT의 실제 검사수량을 차감해 합산합니다. 검사 미완료 여부는 작업지시의 생산 완료 상태를 바꾸지 않습니다. 생산 불량과 검사 불합격은 별도 지표입니다.</p></section>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-6"><section class="panel p-4 h-100"><div class="section-heading"><h2>생산계획 현황</h2><a th:href="@{/production-plans}">생산계획 조회</a></div><dl class="row mb-0 bom-summary">
+            <dt class="col-sm-6">등록된 생산계획</dt><dd class="col-sm-6" th:text="${summary.planCount + '건'}"></dd>
+            <dt class="col-sm-6">계획수량 합계</dt><dd class="col-sm-6 text-break" th:text="${summary.plannedQty.stripTrailingZeros().toPlainString() + ' EA'}"></dd>
+            <dt class="col-sm-6">연결된 작업지시</dt><dd class="col-sm-6" th:text="${summary.workOrderCount + '건'}"></dd>
+        </dl><p class="form-text mb-0">작업지시는 생산계획을 필수 참조하며 연결 건수에는 취소 지시도 포함합니다. 계획수량은 지시수량·실제 생산량과 구분합니다. 계획 대비 달성률은 제공하지 않습니다.</p></section></div>
+        <div class="col-xl-6"><section class="panel p-4 h-100"><div class="section-heading"><h2>원자재 LOT 현황</h2><a th:href="@{/raw-material-lots}">전체 원자재 LOT</a></div><dl class="row mb-0 bom-summary">
+            <dt class="col-sm-6">등록된 LOT</dt><dd class="col-sm-6" th:text="${summary.rawLotCount + '건'}"></dd>
+            <dt class="col-sm-6">재고 소진 LOT</dt><dd class="col-sm-6" th:text="${summary.exhaustedLotCount + '건'}"></dd>
+        </dl><p class="form-text mb-0">가용수량이 0인 LOT을 재고 소진으로 표시합니다. 서로 다른 원자재·단위의 수량을 합산하거나 안전재고·발주 필요 여부를 판정하지 않습니다.</p></section></div>
+    </div>
+    <section class="panel list-panel"><div class="list-heading"><h2>원자재별 LOT 조회</h2></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">원자재 코드·명칭</th><th scope="col">관리단위</th><th scope="col">등록 LOT</th><th scope="col">재고 소진 LOT</th><th scope="col">이동</th></tr></thead><tbody>
+        <tr th:each="row : ${materialLots}"><td th:text="${row.itemCode + ' · ' + row.itemName}"></td><td th:text="${row.unitCode}"></td><td th:text="${row.lotCount + '건'}"></td><td th:text="${row.exhaustedCount + '건'}"></td><td><a th:href="@{/raw-material-lots(code=${row.itemCode})}">원자재 코드로 LOT 검색</a></td></tr>
+        <tr th:if="${#lists.isEmpty(materialLots)}"><td colspan="5" class="empty-state">등록된 원자재 LOT이 없습니다.</td></tr>
+    </tbody></table></div></section>
+
+    <section class="panel list-panel"><div class="list-heading"><h2>최근 등록된 작업지시 · 5건</h2><a th:href="@{/work-orders}">전체 목록</a></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">작업지시</th><th scope="col">완제품</th><th scope="col">상태</th><th scope="col">지시수량</th><th scope="col">등록시각 (KST)</th></tr></thead><tbody>
+        <tr th:each="row : ${recentOrders}"><td><a th:href="@{/work-orders/{id}(id=${row.workOrderId})}" th:text="${row.workOrderId}"></a></td><td th:text="${row.productCode + ' · ' + row.productName}"></td><td th:text="${row.statusLabel}"></td><td th:text="${row.orderedQty.stripTrailingZeros().toPlainString() + ' ' + row.productUnitCode}"></td><td th:text="${@kstDateTimeFormatter.formatUtc(row.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td></tr>
+        <tr th:if="${#lists.isEmpty(recentOrders)}"><td colspan="5" class="empty-state">작업지시 기록 없음</td></tr>
+    </tbody></table></div></section>
+    <section class="panel list-panel"><div class="list-heading"><h2>최근 생산실적 · 5건</h2><a th:href="@{/production-results}">전체 목록</a></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">실적</th><th scope="col">완제품 LOT / 제품</th><th scope="col">생산 / 양품 / 불량 (EA)</th><th scope="col">작업자</th><th scope="col">생산시각 (KST)</th></tr></thead><tbody>
+        <tr th:each="row : ${recentResults}"><td><a th:href="@{/production-results/{id}(id=${row.productionResultId})}" th:text="${row.productionResultId}"></a></td><td><a th:href="@{/finished-goods-lots/{id}(id=${row.finishedLotId})}" th:text="${row.lotNo}"></a><div class="subtle" th:text="${row.productCode + ' · ' + row.productName}"></div></td><td th:text="${row.producedQty.stripTrailingZeros().toPlainString() + ' / ' + row.goodQty.stripTrailingZeros().toPlainString() + ' / ' + row.defectQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.workerRef}"></td><td th:text="${@kstDateTimeFormatter.formatUtc(row.producedAt, 'yyyy-MM-dd HH:mm:ss')}"></td></tr>
+        <tr th:if="${#lists.isEmpty(recentResults)}"><td colspan="5" class="empty-state">생산실적 기록 없음</td></tr>
+    </tbody></table></div></section>
+    <section class="panel list-panel"><div class="list-heading"><h2>최근 품질검사 · 5건</h2><a th:href="@{/quality-inspections}">전체 목록</a></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">검사 / 회차</th><th scope="col">완제품 LOT</th><th scope="col">검사 / 합격 / 불합격 (EA)</th><th scope="col">검사자</th><th scope="col">검사시각 (KST)</th></tr></thead><tbody>
+        <tr th:each="row : ${recentInspections}"><td><a th:href="@{/quality-inspections/{id}(id=${row.inspectionId})}" th:text="${row.inspectionId + ' / ' + row.roundNo + '회'}"></a></td><td><a th:href="@{/finished-goods-lots/{id}/inspections(id=${row.finishedLotId})}" th:text="${row.lotNo}"></a></td><td th:text="${row.inspectedQty.stripTrailingZeros().toPlainString() + ' / ' + row.acceptedQty.stripTrailingZeros().toPlainString() + ' / ' + row.rejectedQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.inspectorRef}"></td><td th:text="${@kstDateTimeFormatter.formatUtc(row.inspectedAt, 'yyyy-MM-dd HH:mm:ss')}"></td></tr>
+        <tr th:if="${#lists.isEmpty(recentInspections)}"><td colspan="5" class="empty-state">품질검사 기록 없음</td></tr>
+    </tbody></table></div></section>
+    <p class="form-text">비율은 반올림·절삭 없이 표시하며 유한 소수가 아닌 값은 정확한 분수식으로 표시합니다. 최근 활동은 등록·생산·검사 업무시각의 내림차순이며 같은 시각은 ID 내림차순입니다. 정정된 생산실적은 현재 수량으로 표시하고 생산시각은 유지합니다.</p>
+</main></body></html>

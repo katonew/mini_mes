@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('생산실적 수량 정정', ~{::main})}"><head><title>생산실적 수량 정정</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/production-results/{id}(id=${result.productionResultId})}">← 생산실적 상세</a><section class="page-heading"><div><p class="eyebrow">PRODUCTION / CORRECTIONS</p><h1 th:text="${'생산실적 ' + result.productionResultId + ' 수량 정정'}"></h1><p class="page-description">진행 중이고 검사 이력이 없는 실적의 수량만 정정합니다. 원자재 소비·반환 및 완제품 LOT 연결은 유지합니다.</p></div></section>
+    <section th:replace="~{production/result/correction-fragments :: current}"></section>
+    <div th:if="${!correctionAllowed}" class="alert alert-warning" role="alert">현재 상태·검사 이력 또는 버전 상한에 따라 정정할 수 없습니다. 현재 실적과 이력을 확인해 주세요.</div>
+    <section class="panel bom-form-panel"><form method="post" th:action="@{/production-results/{id}/corrections(id=${result.productionResultId})}" th:object="${correctionForm}" data-save-form>
+        <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger" role="alert"><strong>정정하지 못했습니다.</strong><ul class="mb-0 mt-1"><li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li></ul></div>
+        <input type="hidden" th:field="*{expectedRevision}"><p class="form-text" th:text="${'입력 기준 버전: ' + correctionForm.expectedRevision + ' / 최신 버전: ' + result.revisionNo}"></p>
+        <div class="section-heading"><h2>변경 전후 수량 비교</h2></div><div class="table-responsive"><table class="table align-middle"><thead><tr><th scope="col">구분 (EA)</th><th scope="col">현재 수량</th><th scope="col">정정할 수량</th></tr></thead><tbody>
+            <tr><th scope="row"><label for="producedQty">생산수량</label></th><td th:text="${result.producedQty.stripTrailingZeros().toPlainString()}"></td><td><input class="form-control" type="text" inputmode="numeric" th:field="*{producedQty}" th:errorclass="is-invalid" required></td></tr>
+            <tr><th scope="row"><label for="goodQty">양품수량</label></th><td th:text="${result.goodQty.stripTrailingZeros().toPlainString()}"></td><td><input class="form-control" type="text" inputmode="numeric" th:field="*{goodQty}" th:errorclass="is-invalid" required></td></tr>
+            <tr><th scope="row"><label for="defectQty">불량수량</label></th><td th:text="${result.defectQty.stripTrailingZeros().toPlainString()}"></td><td><input class="form-control" type="text" inputmode="numeric" th:field="*{defectQty}" th:errorclass="is-invalid" required></td></tr>
+        </tbody></table></div><label class="form-label" for="reason">정정 사유</label><textarea class="form-control" th:field="*{reason}" th:errorclass="is-invalid" maxlength="500" rows="3" required></textarea>
+        <p class="form-text">생산수량은 양수이며 양품·불량의 합계여야 합니다. 모든 수량은 EA 정수이며 정정 후 작업지시 누적 생산수량은 지시수량 이하여야 합니다. 이미 반영되었거나 오래된 버전은 거부합니다. 결과가 불명확하면 이력을 먼저 확인하고, 입력 버전을 자동 갱신하거나 자동 재시도하지 마세요.</p>
+        <div class="form-actions"><a class="btn btn-outline-secondary" th:href="@{/production-results/{id}/corrections(id=${result.productionResultId})}">정정 이력 확인</a><button class="btn btn-primary" type="submit" th:disabled="${!correctionAllowed or correctionForm.expectedRevision == null or correctionForm.expectedRevision != result.revisionNo}">수량 정정 저장</button></div>
+    </form></section>
+</main></body></html>

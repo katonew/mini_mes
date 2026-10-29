@@ -143,6 +143,7 @@ public class PageExceptionHandler {
         log.warn("데이터 조회 실패: {}", exception.getClass().getSimpleName());
         model.addAttribute("safeTitle", "데이터를 불러오지 못했습니다");
         model.addAttribute("safeMessage", "데이터베이스 연결 상태를 확인한 후 다시 시도해 주세요.");
+        if (request.getRequestURI().equals(request.getContextPath() + "/dashboard")) { model.addAttribute("activeMenu", "dashboard"); }
         // 예외 처리에는 새 모델이 사용되므로 Controller의 메뉴값을 다시 지정한다.
         String path = request.getRequestURI().substring(request.getContextPath().length());
         if (path.equals("/processes") || path.startsWith("/processes/")) {

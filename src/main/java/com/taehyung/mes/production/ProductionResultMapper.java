@@ -9,6 +9,11 @@ public interface ProductionResultMapper {
     List<ProductionResult> findAll(@Param("workOrderId") Long workOrderId, @Param("lotNo") String lotNo, @Param("keyword") String keyword);
     ProductionResult findById(@Param("resultId") Long resultId);
     ProductionResult findByReceipt(@Param("receiptId") Long receiptId);
+    ProductionResult findByIdForUpdate(@Param("resultId") Long resultId);
+    List<ProductionResultCorrection> findCorrections(@Param("resultId") Long resultId);
+    boolean hasInspections(@Param("lotId") Long lotId);
+    int correct(@Param("row") ProductionResult row, @Param("command") ProductionResultCorrectionCommand command);
+    int insertCorrection(ProductionResultCorrection correction);
     FinishedGoodsLot findLotByWorkOrder(@Param("workOrderId") Long workOrderId);
     FinishedGoodsLot findLotById(@Param("lotId") Long lotId);
     List<FinishedGoodsLot> findLots(@Param("workOrderId") Long workOrderId, @Param("lotNo") String lotNo, @Param("keyword") String keyword);

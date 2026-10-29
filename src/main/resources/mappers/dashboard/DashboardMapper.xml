@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taehyung.mes.dashboard.DashboardMapper">
+    <!-- 원천별 1행 집계를 결합해 실적·검사·계획 간 JOIN 중복 합산을 방지한다. -->
+    <select id="findSummary" resultType="com.taehyung.mes.dashboard.DashboardSummary">
+        SELECT orders.*,production.*,inspection.*,targets.*,plans.*,raw_lots.*
+        FROM (
+            SELECT COUNT(*) AS work_order_count,
+                COALESCE(SUM(CASE WHEN status='READY' THEN 1 ELSE 0 END),0) AS ready_count,
+                COALESCE(SUM(CASE WHEN status='IN_PROGRESS' THEN 1 ELSE 0 END),0) AS in_progress_count,
+                COALESCE(SUM(CASE WHEN status='COMPLETED' THEN 1 ELSE 0 END),0) AS completed_count,
+                COALESCE(SUM(CASE WHEN status='CANCELLED' THEN 1 ELSE 0 END),0) AS cancelled_count FROM work_order
+        ) orders CROSS JOIN (
+            SELECT COALESCE(SUM(CASE WHEN w.status IN ('IN_PROGRESS','COMPLETED') THEN p.produced_qty ELSE 0 END),0) AS produced_qty,
+                COALESCE(SUM(CASE WHEN w.status IN ('IN_PROGRESS','COMPLETED') THEN p.good_qty ELSE 0 END),0) AS good_qty,
+                COALESCE(SUM(CASE WHEN w.status IN ('IN_PROGRESS','COMPLETED') THEN p.defect_qty ELSE 0 END),0) AS defect_qty,
+                COALESCE(SUM(CASE WHEN w.status NOT IN ('IN_PROGRESS','COMPLETED') THEN 1 ELSE 0 END),0) AS excluded_result_count
+            FROM production_result p JOIN finished_goods_lot f ON f.finished_lot_id=p.finished_lot_id
+            JOIN work_order w ON w.work_order_id=f.work_order_id
+        ) production CROSS JOIN (
+            SELECT COALESCE(SUM(q.inspected_qty),0) AS inspected_qty,COALESCE(SUM(q.accepted_qty),0) AS accepted_qty,
+                COALESCE(SUM(q.rejected_qty),0) AS rejected_qty,
+                COALESCE(SUM(CASE WHEN w.status!='COMPLETED' THEN 1 ELSE 0 END),0) AS invalid_inspection_count
+            FROM quality_inspection q JOIN finished_goods_lot f ON f.finished_lot_id=q.finished_lot_id
+            JOIN work_order w ON w.work_order_id=f.work_order_id
+        ) inspection CROSS JOIN (
+            SELECT COALESCE(SUM(w.inspection_target_qty),0) AS inspection_target_qty,
+                COALESCE(SUM(w.inspection_target_qty-COALESCE(q.inspected_qty,0)),0) AS uninspected_qty,
+                COALESCE(SUM(CASE WHEN w.inspection_target_qty IS NULL OR w.inspection_target_qty &lt; COALESCE(q.inspected_qty,0)
+                    OR (w.inspection_target_qty &gt; 0 AND f.finished_lot_id IS NULL) THEN 1 ELSE 0 END),0) AS invalid_target_count
+            FROM work_order w LEFT JOIN finished_goods_lot f ON f.work_order_id=w.work_order_id
+            LEFT JOIN (SELECT finished_lot_id,SUM(inspected_qty) AS inspected_qty FROM quality_inspection GROUP BY finished_lot_id) q
+                ON q.finished_lot_id=f.finished_lot_id WHERE w.status='COMPLETED'
+        ) targets CROSS JOIN (
+            SELECT COUNT(*) AS plan_count,COALESCE(SUM(planned_qty),0) AS planned_qty FROM production_plan
+        ) plans CROSS JOIN (
+            SELECT COUNT(*) AS raw_lot_count,COALESCE(SUM(CASE WHEN available_qty=0 THEN 1 ELSE 0 END),0) AS exhausted_lot_count
+            FROM raw_material_lot
+        ) raw_lots
+    </select>
+    <select id="findMaterialLots" resultType="com.taehyung.mes.dashboard.DashboardMaterialLots">
+        SELECT i.item_id,i.item_code,i.item_name,l.unit_code,COUNT(*) AS lot_count,
+            SUM(CASE WHEN l.available_qty=0 THEN 1 ELSE 0 END) AS exhausted_count
+        FROM raw_material_lot l JOIN item i ON i.item_id=l.item_id
+        GROUP BY i.item_id,i.item_code,i.item_name,l.unit_code ORDER BY i.item_code,l.unit_code
+    </select>
+    <select id="findRecentOrders" resultType="com.taehyung.mes.workorder.WorkOrder">
+        SELECT w.work_order_id,w.production_plan_id,w.status,w.ordered_qty,w.product_unit_code,w.created_at,
+            i.item_code AS product_code,i.item_name AS product_name
+        FROM work_order w JOIN item i ON i.item_id=w.product_item_id ORDER BY w.created_at DESC,w.work_order_id DESC LIMIT 5
+    </select>
+    <select id="findRecentResults" resultType="com.taehyung.mes.production.ProductionResult">
+        SELECT p.production_result_id,p.finished_lot_id,p.produced_qty,p.good_qty,p.defect_qty,p.produced_at,p.worker_ref,
+            f.work_order_id,f.lot_no,i.item_code AS product_code,i.item_name AS product_name
+        FROM production_result p JOIN finished_goods_lot f ON f.finished_lot_id=p.finished_lot_id
+        JOIN work_order w ON w.work_order_id=f.work_order_id JOIN item i ON i.item_id=w.product_item_id
+        WHERE w.status IN ('IN_PROGRESS','COMPLETED') ORDER BY p.produced_at DESC,p.production_result_id DESC LIMIT 5
+    </select>
+    <select id="findRecentInspections" resultType="com.taehyung.mes.quality.QualityInspection">
+        SELECT q.inspection_id,q.finished_lot_id,q.round_no,q.inspected_qty,q.accepted_qty,q.rejected_qty,q.inspected_at,q.inspector_ref,
+            f.work_order_id,f.lot_no,i.item_code AS product_code,i.item_name AS product_name
+        FROM quality_inspection q JOIN finished_goods_lot f ON f.finished_lot_id=q.finished_lot_id
+        JOIN work_order w ON w.work_order_id=f.work_order_id JOIN item i ON i.item_id=w.product_item_id
+        ORDER BY q.inspected_at DESC,q.inspection_id DESC LIMIT 5
+    </select>
+</mapper>

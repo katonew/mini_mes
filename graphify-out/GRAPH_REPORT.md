@@ -1,52 +1,58 @@
-# Graph Report - mes_side_project  (2026-10-28)
+# Graph Report - mes_side_project  (2026-10-29)
 
 ## Corpus Check
-- 176 files · ~76,418 words
+- 219 files · ~99,456 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 21 file(s) not represented in the graph (top: .xml 8, (none) 6, .properties 2)
+- Unclassified: 25 file(s) not represented in the graph (top: .xml 12, (none) 6, .properties 2)
 
 ## Summary
-- 1988 nodes · 5164 edges · 118 communities (56 shown, 62 thin omitted)
-- Extraction: 76% EXTRACTED · 24% INFERRED · 0% AMBIGUOUS · INFERRED: 1246 edges (avg confidence: 0.85)
+- 2863 nodes · 7560 edges · 167 communities (69 shown, 98 thin omitted)
+- Extraction: 77% EXTRACTED · 23% INFERRED · 0% AMBIGUOUS · INFERRED: 1715 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
+## Graph Freshness
+- Built from commit: `c04247f6`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
+
 ## Community Hubs (Navigation)
-- 원자재 LOT 관리
+- RawMaterialLot
 - 공정 관리
-- 품목 관리
-- 생산계획 관리
+- Item
+- ProductionPlan
 - 웹 예외 처리
 - 애플리케이션 테스트
 - 작업지시 도메인
 - 작업지시 입력 옵션
-- 품목 단위 상태
+- WorkOrderStatus
 - 작업지시 Mapper 연계
 - 원자재 소비
 - BOM 버전
 - DB 도메인 설계
 - BOM 서비스 테스트
-- 소비 서비스 테스트
+- org.junit.jupiter.api.Test
 - BOM 서비스
 - 제품 요구사항
-- 작업지시 Mapper
+- .create
 - BOM Mapper
 - 소비 통합 테스트
-- BOM 테스트
+- list
 - Routing 개정
 - Spring 설정
-- 작업지시 조회
-- 소비 Mapper 연계
+- WorkOrderTotals
+- MaterialConsumptionMapper
 - MaterialConsumptionMaterial 관계
+- DashboardSummary
 - Mini MES Business Rules 관계
 - RoutingService 관계
-- RoutingStep 관계
+- ProductionResult
 - WorkOrderMysqlIntegrationTests 관계
-- BomComponent 관계
-- WorkOrderService 관계
+- BomComponent
+- WorkOrderRuleException
 - mysql 관계
 - BOM 관리 구현 계획 관계
 - 4. 테이블별 컬럼 명세 관계
-- ProcessController 관계
+- org.springframework.ui.Model
 - RoutingServiceTests 관계
 - Routing 관계
 - RoutingController 관계
@@ -54,9 +60,10 @@
 - ItemController 관계
 - MaterialConsumptionReceipt 관계
 - 작업지시 상세·상태 전이 화면 관계
-- BomComponentForm 관계
+- MaterialReturn
 - WorkOrderRoutingOption 관계
 - MaterialConsumptionForm 관계
+- ProductionResultService
 - MaterialConsumptionOutcome 관계
 - BomController 관계
 - MaterialConsumptionCommand 관계
@@ -75,14 +82,14 @@
 - 생산계획 구현 및 검증 관계
 - Routing 구현 및 검증 관계
 - 작업지시 구현 및 검증 관계
-- ProductionPlanService 관계
+- ProductionPlanMysqlIntegrationTests
 - Parent Lock and Conditional 관계
 - AI Failure - MySQL 관계
 - AI Failure - 작업지시 관계
 - BOM 관리 구현 및 관계
 - 공정 관리 구현 및 관계
 - 원자재 LOT 등록·조회 구현 관계
-- RoutingMapper 관계
+- QualityInspection
 - 2. Technology Constraints 관계
 - 4. MES Business Rules 관계
 - 생산계획 구현 및 검증 관계
@@ -117,109 +124,148 @@
 - Mini MES Backend Setup 관계
 - 요청 오류 안내 화면 관계
 - 공통 화면 레이아웃 관계
+- ProductionResultCorrection
+- .setUp
+- MaterialReturnMysqlIntegrationTests
+- ProductionResultForm
+- QualityInspectionLot
+- FinishedGoodsLot
+- LotTraceDetails
+- ProductionResultMysqlIntegrationTests
+- QualityInspectionMapper
+- .create
+- ProductionResultMapper
+- QualityInspectionForm
+- RawMaterialLotMysqlIntegrationTests
+- MaterialReturnForm
+- MaterialReturnReceipt
+- .create
+- ProductionResultReceipt
+- QualityInspectionReceipt
+- .form
+- MaterialReturnService
+- ProductionPlanService
+- ProductionResultCorrectionForm
+- QualityInspectionController
+- .create
+- ItemKind
+- ProductionPlanServiceTests
+- DashboardMaterialLots
+- RawMaterialLotMapper
+- MaterialReturnController
+- .get
+- DashboardController
+- ItemMapper
+- DashboardMapper
+- RawMaterialLotServiceTests
+- 테스트 구분
+- .get
+- 9차 원자재 반환 구현·검증 기록
+- ItemUnit
+- Material Return Implementation Plan
+- 원자재 반환 설계
+- MaterialConsumptionOptions
+- .create
+- ProductionPlanControllerTests
+- MaterialReturnMapperTests
+- MaterialReturnRequestExistsException
+- ProductionResultRequestExistsException
+- QualityInspectionRequestExistsException
 
 ## God Nodes (most connected - your core abstractions)
-1. `Item` - 73 edges
-2. `WorkOrder` - 70 edges
-3. `MaterialConsumption` - 54 edges
-4. `BomVersion` - 45 edges
-5. `RawMaterialLot` - 44 edges
-6. `ItemMapper` - 43 edges
-7. `ProductionPlan` - 42 edges
-8. `ManufacturingProcess` - 39 edges
-9. `RoutingRevision` - 38 edges
-10. `BomComponent` - 35 edges
+1. `WorkOrder` - 88 edges
+2. `Item` - 73 edges
+3. `MaterialConsumption` - 66 edges
+4. `ProductionResult` - 65 edges
+5. `MaterialReturn` - 58 edges
+6. `WorkOrderMapper` - 54 edges
+7. `QualityInspection` - 53 edges
+8. `BomVersion` - 49 edges
+9. `DashboardSummary` - 47 edges
+10. `RawMaterialLot` - 46 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `향후 실행과 검증` --references--> `MesApplicationTests`  [INFERRED]
   README.md → src/test/java/com/taehyung/mes/MesApplicationTests.java
-- `Historical Traceability` --semantically_similar_to--> `Actual History Trace Path`  [INFERRED] [semantically similar]
-  AGENTS.md → docs/erd-design.md
-- `schema.sql Single Source of Truth` --conceptually_related_to--> `Mini MES MySQL Physical Database Design`  [INFERRED]
-  README.md → docs/database-design.md
-- `Mini MES MySQL Physical Database Design` --references--> `Mini MES Codex Working Rules`  [EXTRACTED]
-  docs/database-design.md → AGENTS.md
-- `Service Business Rules and Transaction Boundary` --conceptually_related_to--> `Parent Lock and Conditional LOT Decrement`  [INFERRED]
-  AGENTS.md → docs/database-design.md
+- `테스트 구분` --references--> `ProductionResultContractTests`  [INFERRED]
+  docs/production-result-verification.md → src/test/java/com/taehyung/mes/production/ProductionResultContractTests.java
+- `테스트 구분` --references--> `ProductionResultControllerTests`  [INFERRED]
+  docs/production-result-verification.md → src/test/java/com/taehyung/mes/production/ProductionResultControllerTests.java
+- `테스트 구분` --references--> `ProductionResultMysqlIntegrationTests`  [INFERRED]
+  docs/production-result-verification.md → src/test/java/com/taehyung/mes/production/ProductionResultMysqlIntegrationTests.java
+- `테스트 구분` --references--> `ProductionResultServiceTests`  [INFERRED]
+  docs/production-result-verification.md → src/test/java/com/taehyung/mes/production/ProductionResultServiceTests.java
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
+- **원자재 소비 추적 흐름** — src_main_resources_templates_lot_consumption_detail_template, src_main_resources_templates_lot_raw_detail_template, src_main_resources_templates_workorder_detail_template [EXTRACTED 1.00]
+- **작업지시에 확정된 생산 기준** — src_main_resources_templates_workorder_detail_template, src_main_resources_templates_bom_detail_template, src_main_resources_templates_routing_detail_template [EXTRACTED 1.00]
 - **Applied Version Traceability** — agents_historical_traceability, docs_business_rules_bom_routing_version_preservation, docs_database_design_immutable_shared_versions, docs_erd_design_actual_history_trace_path [INFERRED 0.85]
 - **과거 생산 기준정보와 소비 이력 보존** — docs_bom_verification_bom_version_immutability, docs_routing_verification_revision_snapshot, docs_work_order_verification_work_order_historical_versions, docs_material_consumption_verification_historical_consumption [INFERRED 0.85]
-- **작업지시에 확정된 생산 기준** — src_main_resources_templates_workorder_detail_template, src_main_resources_templates_bom_detail_template, src_main_resources_templates_routing_detail_template [EXTRACTED 1.00]
-- **원자재 소비 추적 흐름** — src_main_resources_templates_lot_consumption_detail_template, src_main_resources_templates_lot_raw_detail_template, src_main_resources_templates_workorder_detail_template [EXTRACTED 1.00]
 
-## Communities (118 total, 62 thin omitted)
-
-### Community 0 - "원자재 LOT 관리"
-Cohesion: 0.05
-Nodes (8): RawMaterialLot, RawMaterialLotForm, RawMaterialLotMapper, RawMaterialLotRuleException, RawMaterialLotService, RawMaterialLotControllerTests, RawMaterialLotMysqlIntegrationTests, RawMaterialLotServiceTests
+## Communities (167 total, 98 thin omitted)
 
 ### Community 1 - "공정 관리"
-Cohesion: 0.07
-Nodes (6): ManufacturingProcess, ProcessForm, ProcessMapper, ProcessService, ProcessControllerTests, ProcessServiceTests
-
-### Community 2 - "품목 관리"
-Cohesion: 0.07
-Nodes (5): Item, ItemForm, ItemService, ItemControllerTests, ItemServiceTests
-
-### Community 3 - "생산계획 관리"
 Cohesion: 0.06
-Nodes (5): ProductionPlan, ProductionPlanForm, ProductionPlanRuleException, ProductionPlanControllerTests, ProductionPlanServiceTests
+Nodes (8): ManufacturingProcess, ProcessController, ProcessForm, ProcessMapper, ProcessRuleException, ProcessService, ProcessControllerTests, ProcessServiceTests
 
 ### Community 4 - "웹 예외 처리"
 Cohesion: 0.07
-Nodes (9): BomNotFoundException, PageExceptionHandler, ItemNotFoundException, MaterialConsumptionNotFoundException, RawMaterialLotNotFoundException, ProcessNotFoundException, ProductionPlanNotFoundException, RoutingNotFoundException (+1 more)
+Nodes (10): BomNotFoundException, PageExceptionHandler, ItemNotFoundException, MaterialConsumptionNotFoundException, MaterialReturnNotFoundException, RawMaterialLotNotFoundException, ProcessNotFoundException, ProductionPlanNotFoundException (+2 more)
 
 ### Community 5 - "애플리케이션 테스트"
-Cohesion: 0.05
-Nodes (16): mini_mes, MySQL 개발 환경, 개발 도구와 버전, 스키마 단일 원본과 적용 전 확인, 최소 디렉터리 구조, 향후 실행과 검증, 환경변수 설정, KstDateTimeFormatter (+8 more)
+Cohesion: 0.07
+Nodes (11): mini_mes, MySQL 개발 환경, 개발 도구와 버전, 스키마 단일 원본과 적용 전 확인, 최소 디렉터리 구조, 향후 실행과 검증, 환경변수 설정, KstDateTimeFormatter (+3 more)
 
 ### Community 7 - "작업지시 입력 옵션"
-Cohesion: 0.06
+Cohesion: 0.07
 Nodes (3): WorkOrderAllocation, WorkOrderBomOption, WorkOrderOptions
 
-### Community 8 - "품목 단위 상태"
-Cohesion: 0.05
-Nodes (13): ItemKind, FINISHED, RAW, SEMI, ItemUnit, EA, G, M (+5 more)
+### Community 8 - "WorkOrderStatus"
+Cohesion: 0.13
+Nodes (5): WorkOrderStatus, CANCELLED, COMPLETED, IN_PROGRESS, READY
+
+### Community 10 - "원자재 소비"
+Cohesion: 0.06
+Nodes (3): MaterialConsumption, MaterialLotTotal, MaterialUsage
 
 ### Community 12 - "DB 도메인 설계"
 Cohesion: 0.05
 Nodes (36): 10. 생산실적 정정 이력 모델, 11.1 B 추천: 업무 요청 전용 RequestReceipt, 11.2 원자 처리와 결과 연결, 11.3 8차 원자재 실제 소비 확정, 11. 중복 요청 방지 모델, 12. 트랜잭션 경계, 13.1 불변식별 제어 수단, 13.2 잠금 순서와 최신 집계 (+28 more)
 
+### Community 14 - "org.junit.jupiter.api.Test"
+Cohesion: 0.12
+Nodes (7): MaterialConsumptionMapperTests, MaterialReturnContractTests, MaterialReturnServiceTests, ProcessMapperTests, ProductionPlanMapperTests, RoutingMapperTests, WorkOrderMapperTests
+
 ### Community 15 - "BOM 서비스"
-Cohesion: 0.17
-Nodes (3): BomForm, BomRuleException, BomService
+Cohesion: 0.11
+Nodes (4): BomForm, BomRuleException, BomService, BomControllerTests
 
 ### Community 16 - "제품 요구사항"
 Cohesion: 0.06
 Nodes (32): 10. 우선 결정할 업무 정책, 11. AI 활용 및 검증 원칙, 12. 후속 작업, 1. 프로젝트 목적, 2.1 MVP 포함, 2.2 MVP 제외, 2.3 범위 확정 필요, 2. 범위 (+24 more)
 
-### Community 17 - "작업지시 Mapper"
-Cohesion: 0.12
-Nodes (3): WorkOrderForm, WorkOrderMapper, WorkOrderServiceTests
+### Community 17 - ".create"
+Cohesion: 0.10
+Nodes (4): WorkOrderForm, WorkOrderService, WorkOrderControllerTests, WorkOrderServiceTests
 
 ### Community 22 - "Spring 설정"
 Cohesion: 0.07
 Nodes (29): id, name, map-underscore-to-camel-case, driver-class-name, hikari, password, url, username (+21 more)
 
-### Community 24 - "소비 Mapper 연계"
-Cohesion: 0.13
-Nodes (5): MaterialConsumptionMapper, MaterialConsumptionOutcomeCodec, MaterialConsumptionService, MaterialConsumptionTransactionService, MaterialConsumptionControllerTests
+### Community 24 - "MaterialConsumptionMapper"
+Cohesion: 0.11
+Nodes (5): MaterialConsumptionMapper, MaterialConsumptionOutcomeCodec, MaterialConsumptionService, MaterialConsumptionTransactionService, MaterialConsumptionServiceTests
 
 ### Community 27 - "Mini MES Business Rules 관계"
 Cohesion: 0.09
 Nodes (24): 10. 업무 예외 시나리오, 12. 후속 설계 작업, 1. 문서 목적 및 적용 범위, 2. 기준 제조 업무 시나리오, 3. 핵심 도메인 관계, 4. 작업지시 상태 전이, 5. 원자재 LOT 및 수량 관리, 8. LOT 추적 규칙 (+16 more)
 
 ### Community 28 - "RoutingService 관계"
-Cohesion: 0.20
+Cohesion: 0.15
 Nodes (4): RoutingForm, RoutingRuleException, RoutingService, RoutingControllerTests
-
-### Community 32 - "WorkOrderService 관계"
-Cohesion: 0.13
-Nodes (3): WorkOrderRuleException, WorkOrderService, WorkOrderControllerTests
 
 ### Community 33 - "mysql 관계"
 Cohesion: 0.09
@@ -236,6 +282,10 @@ Nodes (21): 4.10 work_order, 4.11 finished_goods_lot, 4.12 production_result, 4.
 ### Community 44 - "작업지시 상세·상태 전이 화면 관계"
 Cohesion: 0.16
 Nodes (18): BOM 버전 상세 화면, BOM 등록·수정 화면, BOM 버전 목록 화면, 원자재 소비 상세 화면, 원자재 소비 등록 화면, 원자재 소비 이력 화면, 원자재 LOT 상세 화면, 원자재 LOT 등록 화면 (+10 more)
+
+### Community 48 - "ProductionResultService"
+Cohesion: 0.09
+Nodes (5): FinishedGoodsLotController, ProductionResultNotFoundException, CorrectionDetails, ProductionResultService, ProductionResultControllerTests
 
 ### Community 53 - "Mini MES Codex Working 관계"
 Cohesion: 0.15
@@ -276,10 +326,6 @@ Nodes (8): Business Decision Required — 저장된 미사용 개정의 직접 �
 ### Community 66 - "작업지시 구현 및 검증 관계"
 Cohesion: 0.22
 Nodes (8): 개발자 직접 확인, 남은 정책과 후속 구현, 신규 등록과 최초 사용, 작성된 테스트와 수행 여부, 작업지시 구현 및 검증 안내, 잠금과 상태, 추가·수정 파일, 화면과 URL
-
-### Community 67 - "ProductionPlanService 관계"
-Cohesion: 0.46
-Nodes (3): ProductionPlanMapper, ProductionPlanService, ProductionPlanMysqlIntegrationTests
 
 ### Community 68 - "Parent Lock and Conditional 관계"
 Cohesion: 0.29
@@ -377,25 +423,85 @@ Nodes (3): 13.1 실제 반환과 입력 오류는 다른 사건, 13.2 주요 기
 Cohesion: 0.67
 Nodes (3): 8.1 원천과 파생값, 8.2 집계 저장의 선택, 8. 수량 저장·집계 전략
 
+### Community 119 - ".setUp"
+Cohesion: 0.12
+Nodes (3): MaterialReturnMapper, MaterialReturnOutcomeCodec, MaterialReturnTransactionService
+
+### Community 121 - "ProductionResultForm"
+Cohesion: 0.11
+Nodes (4): ProductionResultCommand, ProductionResultForm, ProductionResultRuleException, ProductionResultContractTests
+
+### Community 124 - "LotTraceDetails"
+Cohesion: 0.15
+Nodes (4): LotTraceDetails, LotTraceService, MaterialKey, MaterialLotKey
+
+### Community 126 - "QualityInspectionMapper"
+Cohesion: 0.15
+Nodes (6): QualityInspectionMapper, QualityInspectionNotFoundException, QualityInspectionOutcomeCodec, QualityInspectionHistory, QualityInspectionService, QualityInspectionTransactionService
+
+### Community 127 - ".create"
+Cohesion: 0.20
+Nodes (3): ItemForm, ItemService, ItemControllerTests
+
+### Community 128 - "ProductionResultMapper"
+Cohesion: 0.19
+Nodes (3): ProductionResultMapper, ProductionResultOutcomeCodec, ProductionResultTransactionService
+
+### Community 131 - "MaterialReturnForm"
+Cohesion: 0.15
+Nodes (3): MaterialReturnCommand, MaterialReturnForm, MaterialReturnRuleException
+
+### Community 138 - "ProductionPlanService"
+Cohesion: 0.19
+Nodes (3): ProductionPlanMapper, ProductionPlanRuleException, ProductionPlanService
+
+### Community 142 - "ItemKind"
+Cohesion: 0.15
+Nodes (4): ItemKind, FINISHED, RAW, SEMI
+
+### Community 150 - "DashboardMapper"
+Cohesion: 0.27
+Nodes (3): DashboardMapper, DashboardDetails, DashboardService
+
+### Community 152 - "테스트 구분"
+Cohesion: 0.18
+Nodes (6): 생산실적·완제품 LOT 구현 및 검증 안내, 실행 여부, 저장·동시성 규약, 테스트 구분, 화면과 URL, ProductionResultMapperTests
+
+### Community 154 - "9차 원자재 반환 구현·검증 기록"
+Cohesion: 0.20
+Nodes (9): 9차 원자재 반환 구현·검증 기록, MySQL 통합 테스트 실행 조건, 변경 파일, 실행하지 않은 검증, 실행한 검증, 정합성 및 잠금 검토, 중복 요청 계약, 추가 결정 (+1 more)
+
+### Community 155 - "ItemUnit"
+Cohesion: 0.20
+Nodes (4): ItemUnit, EA, G, M
+
+### Community 156 - "Material Return Implementation Plan"
+Cohesion: 0.25
+Nodes (7): Global Constraints, Material Return Implementation Plan, Review Focus, Task 1: 입력·저장 계약, Task 2: 화면, Task 3: MySQL 증명·문서·최종 검토, 실행 결과
+
+### Community 158 - "원자재 반환 설계"
+Cohesion: 0.29
+Nodes (6): 대안과 선택, 목적과 범위, 승인 계약, 원자재 반환 설계, 트랜잭션과 동시성, 화면과 검증
+
 ## Knowledge Gaps
 - **37 isolated node(s):** `RAW`, `SEMI`, `FINISHED`, `EA`, `M` (+32 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 711 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **62 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1024 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **98 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BomComponent` connect `BomComponent 관계` to `WorkOrderService 관계`, `작업지시 Mapper 연계`, `BOM 버전`, `소비 서비스 테스트`, `BOM 서비스`, `BOM Mapper`?**
-  _High betweenness centrality (0.031) - this node is a cross-community bridge._
+- **Why does `MaterialConsumption` connect `원자재 소비` to `애플리케이션 테스트`, `MaterialReturnService`, `org.junit.jupiter.api.Test`, `MaterialConsumptionOutcome 관계`, `MaterialConsumptionCommand 관계`, `.setUp`, `MaterialConsumptionMapper`, `.get`, `LotTraceDetails`, `BomComponent`?**
+  _High betweenness centrality (0.048) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `Item` (e.g. with `.missingVersionsAndInactiveProductOrProcessAreRejected()` and `.optionsShowInactiveProcessesAsUnselectableAndCompletionGuardRequiresExactQuantity()`) actually correct?**
   _`Item` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `RAW`, `SEMI`, `FINISHED` to the rest of the system?**
   _37 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `원자재 LOT 관리` be split into smaller, more focused modules?**
-  _Cohesion score 0.05422100205902539 - nodes in this community are weakly interconnected._
-- **Why does `MaterialConsumption` connect `원자재 소비` to `애플리케이션 테스트`, `소비 서비스 테스트`, `MaterialConsumptionOutcome 관계`, `MaterialConsumptionCommand 관계`, `소비 Mapper 연계`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Should `RawMaterialLot` be split into smaller, more focused modules?**
+  _Cohesion score 0.10256410256410256 - nodes in this community are weakly interconnected._
+- **Why does `WorkOrder` connect `작업지시 도메인` to `loggerfactory 관계`, `WorkOrderStatus`, `작업지시 Mapper 연계`, `BomComponent`, `org.junit.jupiter.api.Test`, `ProductionResultService`, `.create`, `.get`, `list`, `WorkOrderTransitionForm 관계`, `DashboardMapper`, `WorkOrderTotals`, `MaterialConsumptionMapper`, `.setUp`, `LotTraceDetails`, `ProductionResultMysqlIntegrationTests`, `WorkOrderMysqlIntegrationTests 관계`, `MaterialConsumptionOptions`?**
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **Should `공정 관리` be split into smaller, more focused modules?**
-  _Cohesion score 0.07243243243243243 - nodes in this community are weakly interconnected._
-- **Why does `WorkOrder` connect `작업지시 도메인` to `WorkOrderService 관계`, `loggerfactory 관계`, `품목 단위 상태`, `작업지시 Mapper 연계`, `소비 서비스 테스트`, `list 관계`, `작업지시 Mapper`, `BOM 테스트`, `WorkOrderTransitionForm 관계`, `작업지시 조회`, `소비 Mapper 연계`, `WorkOrderMysqlIntegrationTests 관계`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+  _Cohesion score 0.05554311310190369 - nodes in this community are weakly interconnected._
+- **Why does `FinishedGoodsLot` connect `FinishedGoodsLot` to `ProductionResultMapper`, `ProductionResultService`, `.get`, `list`, `WorkOrderTransitionForm 관계`, `WorkOrderTotals`, `LotTraceDetails`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._

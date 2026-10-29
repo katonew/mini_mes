@@ -67,7 +67,7 @@ public class ProductionResultTransactionService {
         return outcome;
     }
 
-    @Transactional(propagation=Propagation.REQUIRES_NEW, isolation=Isolation.READ_COMMITTED, readOnly=true)
+    @Transactional(propagation=Propagation.REQUIRES_NEW, isolation=Isolation.REPEATABLE_READ, readOnly=true)
     public ProductionResultOutcome replay(ProductionResultCommand command) {
         var receipt = mapper.findReceipt(command.scopeKey(), command.requestKey());
         if (receipt == null || receipt.getProcessedAt() == null || receipt.getSnapshot() == null
@@ -78,9 +78,16 @@ public class ProductionResultTransactionService {
             throw rule("requestKey", "이미 처리한 요청 키에 다른 작업지시·LOT·수량·작업자를 사용할 수 없습니다. 새 등록에는 새 요청 키를 사용해 주세요.");
         }
         var row = mapper.findByReceipt(receipt.getReceiptId());
-        if (!matches(row, command) || (command.lotNo() != null && !Objects.equals(row.getLotNo(), command.lotNo()))
+        if (row == null) { throw invalid("Production receipt has no result."); }
+        var initial = outcomes.decodeInitial(receipt.getSnapshot(), row, mapper.findCorrections(row.getProductionResultId()));
+        if (!Objects.equals(initial.workOrderId(), command.workOrderId()) || !Objects.equals(row.getCreatedBy(), command.actor())
+                || new BigDecimal(initial.producedQty()).compareTo(command.producedQty()) != 0
+                || new BigDecimal(initial.goodQty()).compareTo(command.goodQty()) != 0
+                || new BigDecimal(initial.defectQty()).compareTo(command.defectQty()) != 0
+                || !Objects.equals(initial.workerRef(), command.workerRef())
+                || (command.lotNo() != null && !Objects.equals(initial.lotNo(), command.lotNo()))
                 || mapper.countReceiptResults(receipt.getReceiptId()) != 1) { throw invalid("Production receipt does not identify one matching result."); }
-        return outcomes.decode(receipt.getSnapshot(), row);
+        return initial;
     }
     private boolean matches(ProductionResult row, ProductionResultCommand command) {
         return row != null && Objects.equals(row.getWorkOrderId(), command.workOrderId())

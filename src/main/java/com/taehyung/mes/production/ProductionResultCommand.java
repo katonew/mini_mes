@@ -41,7 +41,7 @@ public record ProductionResultCommand(Long workOrderId, String lotNo, BigDecimal
                 + "\nproducedQty=" + producedQty.toPlainString() + "\ngoodQty=" + goodQty.toPlainString()
                 + "\ndefectQty=" + defectQty.toPlainString() + "\nworkerRef=" + workerRef);
     }
-    private static BigDecimal ea(BigDecimal value, String field, boolean positive) {
+    static BigDecimal ea(BigDecimal value, String field, boolean positive) {
         if (value == null || (positive ? value.signum() <= 0 : value.signum() < 0) || value.scale() > 6
                 || value.compareTo(MAX_EA) > 0 || value.stripTrailingZeros().scale() > 0) {
             throw rule(field, "생산·양품·불량수량은 EA 정수이며 생산수량은 양수, 각 수량은 999999999999 이하여야 합니다.");

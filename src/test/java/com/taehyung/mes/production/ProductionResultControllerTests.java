@@ -48,7 +48,7 @@ class ProductionResultControllerTests {
                 .andExpect(model().attributeHasFieldErrors("productionResultForm", "lotNo"));
     }
     @Test void detailAndLotLookupUseSafeErrors() throws Exception {
-        when(service.get(99L)).thenThrow(new ProductionResultNotFoundException());
+        when(service.correctionDetails(99L)).thenThrow(new ProductionResultNotFoundException());
         mvc.perform(get("/production-results/99")).andExpect(status().isNotFound())
                 .andExpect(model().attribute("activeMenu", "production-results"));
         when(service.lot(99L)).thenThrow(new ProductionResultNotFoundException());

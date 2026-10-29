@@ -19,6 +19,8 @@ public class ProductionResultController {
     public ProductionResultController(ProductionResultService service) { this.service = service; }
     @InitBinder("productionResultForm")
     void bindForm(WebDataBinder binder) { binder.setAllowedFields("workOrderId", "lotNo", "producedQty", "goodQty", "defectQty", "workerRef", "requestKey"); }
+    @InitBinder("correctionForm")
+    void bindCorrection(WebDataBinder binder) { binder.setAllowedFields("expectedRevision", "producedQty", "goodQty", "defectQty", "reason"); }
     @ModelAttribute("activeMenu") String activeMenu() { return "production-results"; }
 
     @GetMapping("/production-results")
@@ -54,7 +56,41 @@ public class ProductionResultController {
     }
     @GetMapping("/production-results/{resultId}")
     public String detail(@PathVariable("resultId") Long resultId, Model model) {
-        model.addAttribute("result", service.get(resultId)); return "production/result/detail";
+        correctionDetails(resultId, model); return "production/result/detail";
+    }
+    @GetMapping("/production-results/{resultId}/corrections")
+    public String corrections(@PathVariable("resultId") Long resultId, Model model) {
+        correctionDetails(resultId, model); return "production/result/correction-history";
+    }
+    @GetMapping("/production-results/{resultId}/corrections/new")
+    public String correctionForm(@PathVariable("resultId") Long resultId, Model model) {
+        var details = correctionDetails(resultId, model); var current = details.result();
+        var form = new ProductionResultCorrectionForm(); form.setExpectedRevision(current.getRevisionNo());
+        form.setProducedQty(current.getProducedQty()); form.setGoodQty(current.getGoodQty()); form.setDefectQty(current.getDefectQty());
+        model.addAttribute("correctionForm", form); return "production/result/correction-form";
+    }
+    @PostMapping("/production-results/{resultId}/corrections")
+    public String correct(@PathVariable("resultId") Long resultId, @ModelAttribute("correctionForm") ProductionResultCorrectionForm form,
+                          BindingResult errors, Model model, RedirectAttributes redirect) {
+        if (!errors.hasErrors()) {
+            try {
+                service.correct(resultId, form); redirect.addFlashAttribute("successMessage", "생산수량을 정정하고 변경 전후 값과 정정 사유를 이력으로 저장했습니다.");
+                return "redirect:/production-results/" + resultId;
+            } catch (ProductionResultRuleException exception) {
+                if (exception.getField() == null) { errors.reject("productionCorrection.rule", exception.getMessage()); }
+                else { errors.rejectValue(exception.getField(), "productionCorrection.rule", exception.getMessage()); }
+            } catch (DataAccessException exception) {
+                log.warn("생산실적 정정 실패: {}", exception.getClass().getSimpleName());
+                errors.reject("productionCorrection.storage", "정정 결과를 확인하지 못했습니다. 현재 실적과 정정 이력을 먼저 확인해 주세요. 입력 버전은 유지되며 자동 재시도하지 않습니다.");
+            }
+        }
+        correctionDetails(resultId, model); return "production/result/correction-form";
+    }
+    private ProductionResultService.CorrectionDetails correctionDetails(Long resultId, Model model) {
+        var details = service.correctionDetails(resultId);
+        model.addAttribute("result", details.result()); model.addAttribute("order", details.order());
+        model.addAttribute("totals", details.totals()); model.addAttribute("corrections", details.history());
+        model.addAttribute("correctionAllowed", details.correctionAllowed()); return details;
     }
     private String formView(Model model, ProductionResultForm form) {
         model.addAttribute("orders", List.of()); model.addAttribute("order", null); model.addAttribute("lot", null);

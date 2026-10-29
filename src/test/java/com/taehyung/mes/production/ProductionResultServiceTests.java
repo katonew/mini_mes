@@ -39,7 +39,7 @@ class ProductionResultServiceTests {
         when(mapper.insertLot(any())).thenAnswer(call -> { ((FinishedGoodsLot) call.getArgument(0)).setFinishedLotId(20L); return 1; });
         when(mapper.insert(any())).thenAnswer(call -> {
             var row = (ProductionResult) call.getArgument(0); row.setProductionResultId(30L); row.setWorkOrderId(1L);
-            row.setLotNo("FG-1"); row.setProducedAt(LocalDateTime.of(2026,10,28,1,2,3,123456000)); row.setRevisionNo(1);
+            row.setLotNo("FG-1"); row.setProducedAt(LocalDateTime.of(2026,10,28,1,2,3,123456000)); row.setRevisionNo(1L);
             stored.set(row); return 1;
         });
         when(mapper.findByReceipt(11L)).thenAnswer(call -> stored.get());

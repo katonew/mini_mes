@@ -1,0 +1,6 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('생산실적 정정 이력', ~{::main})}"><head><title>생산실적 정정 이력</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/production-results/{id}(id=${result.productionResultId})}">← 생산실적 상세</a><section class="page-heading"><div><p class="eyebrow">PRODUCTION / CORRECTIONS</p><h1 th:text="${'생산실적 ' + result.productionResultId + ' 정정 이력'}"></h1><p class="page-description">수량 정정의 전후 값·버전·사유·작성자·시각을 보존합니다. 생산시각과 작업자는 수량 정정으로 변경하지 않습니다.</p></div><a th:if="${correctionAllowed}" class="btn btn-primary" th:href="@{/production-results/{id}/corrections/new(id=${result.productionResultId})}">수량 정정</a></section>
+    <section th:replace="~{production/result/correction-fragments :: current}"></section>
+    <section th:replace="~{production/result/correction-fragments :: history}"></section>
+</main></body></html>

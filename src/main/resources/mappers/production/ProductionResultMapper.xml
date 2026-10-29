@@ -48,6 +48,34 @@
         SELECT <include refid="resultColumns"/> <include refid="resultJoins"/> WHERE f.finished_lot_id=#{lotId}
         ORDER BY p.production_result_id DESC
     </select>
+    <!-- 잠금 전 부모 식별 조회의 MyBatis 세션 캐시를 비워 최신 실적을 다시 읽는다. -->
+    <select id="findByIdForUpdate" resultType="com.taehyung.mes.production.ProductionResult" flushCache="true">
+        SELECT production_result_id,finished_lot_id,receipt_id,produced_qty,good_qty,defect_qty,produced_at,
+            worker_ref,revision_no,created_at,created_by FROM production_result WHERE production_result_id=#{resultId} FOR UPDATE
+    </select>
+    <select id="findCorrections" resultType="com.taehyung.mes.production.ProductionResultCorrection">
+        SELECT correction_id,production_result_id,from_revision,to_revision,
+            before_produced_qty,after_produced_qty,before_good_qty,after_good_qty,before_defect_qty,after_defect_qty,
+            before_produced_at,after_produced_at,before_worker_ref,after_worker_ref,reason,created_at,created_by
+        FROM production_result_correction WHERE production_result_id=#{resultId} ORDER BY to_revision
+    </select>
+    <select id="hasInspections" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM quality_inspection WHERE finished_lot_id=#{lotId})
+    </select>
+    <update id="correct">
+        UPDATE production_result SET produced_qty=#{command.producedQty},good_qty=#{command.goodQty},
+            defect_qty=#{command.defectQty},revision_no=revision_no+1,updated_at=UTC_TIMESTAMP(6)
+        WHERE production_result_id=#{row.productionResultId} AND finished_lot_id=#{row.finishedLotId}
+            AND revision_no=#{command.expectedRevision}
+    </update>
+    <insert id="insertCorrection" useGeneratedKeys="true" keyProperty="correctionId" keyColumn="correction_id">
+        INSERT INTO production_result_correction(production_result_id,from_revision,to_revision,
+            before_produced_qty,after_produced_qty,before_good_qty,after_good_qty,before_defect_qty,after_defect_qty,
+            before_produced_at,after_produced_at,before_worker_ref,after_worker_ref,reason,created_by)
+        VALUES (#{productionResultId},#{fromRevision},#{toRevision},#{beforeProducedQty},#{afterProducedQty},
+            #{beforeGoodQty},#{afterGoodQty},#{beforeDefectQty},#{afterDefectQty},#{beforeProducedAt},#{afterProducedAt},
+            #{beforeWorkerRef},#{afterWorkerRef},#{reason},#{createdBy})
+    </insert>
     <select id="existsLotNo" resultType="boolean">SELECT EXISTS(SELECT 1 FROM finished_goods_lot WHERE lot_no=#{lotNo})</select>
     <insert id="insertLot" useGeneratedKeys="true" keyProperty="finishedLotId" keyColumn="finished_lot_id">
         INSERT INTO finished_goods_lot(work_order_id,lot_no,created_by) VALUES (#{workOrderId},#{lotNo},#{createdBy})
