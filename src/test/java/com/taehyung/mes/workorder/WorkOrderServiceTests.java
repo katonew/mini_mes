@@ -31,6 +31,22 @@ class WorkOrderServiceTests {
     private Routing routing;
     private RoutingRevision revision;
 
+    @Test void completeLocksOrderAndStoresGoodQtyAsInspectionTarget() {
+        WorkOrder running = new WorkOrder(); running.setWorkOrderId(9L); running.setStatus("IN_PROGRESS");
+        running.setOrderedQty(new BigDecimal("20"));
+        var totals = new WorkOrderTotals(); totals.setResultCount(2L); totals.setProducedQty(new BigDecimal("20"));
+        totals.setGoodQty(new BigDecimal("18")); totals.setDefectQty(new BigDecimal("2"));
+        when(mapper.findByIdForUpdate(9L)).thenReturn(running); when(mapper.findTotals(9L)).thenReturn(totals);
+        when(mapper.complete(9L, new BigDecimal("18"), "LOCAL_DEV")).thenReturn(1);
+        service.complete(9L);
+        var sequence = inOrder(mapper); sequence.verify(mapper).findByIdForUpdate(9L);
+        sequence.verify(mapper).findTotals(9L); sequence.verify(mapper).complete(9L, new BigDecimal("18"), "LOCAL_DEV");
+        totals.setProducedQty(new BigDecimal("19"));
+        assertThatThrownBy(() -> service.complete(9L)).isInstanceOf(WorkOrderRuleException.class);
+        totals.setProducedQty(new BigDecimal("20")); totals.setGoodQty(new BigDecimal("17"));
+        assertThatThrownBy(() -> service.complete(9L)).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
     @BeforeEach
     void setUp() {
         mapper = mock(WorkOrderMapper.class); boms = mock(BomMapper.class); routings = mock(RoutingMapper.class);

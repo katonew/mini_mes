@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taehyung.mes.quality.QualityInspectionMapper">
+    <sql id="columns">q.inspection_id,q.finished_lot_id,q.receipt_id,q.round_no,q.inspected_qty,q.accepted_qty,
+        q.rejected_qty,q.inspected_at,q.inspector_ref,q.judgement_reason,q.created_at,q.created_by,
+        f.work_order_id,f.lot_no,i.item_code AS product_code,i.item_name AS product_name,
+        r.initial_outcome_snapshot AS snapshot</sql>
+    <sql id="joins">FROM quality_inspection q JOIN finished_goods_lot f ON f.finished_lot_id=q.finished_lot_id
+        JOIN work_order w ON w.work_order_id=f.work_order_id JOIN item i ON i.item_id=w.product_item_id
+        JOIN request_receipt r ON r.receipt_id=q.receipt_id</sql>
+    <select id="findAll" resultType="com.taehyung.mes.quality.QualityInspection">
+        SELECT <include refid="columns"/> <include refid="joins"/>
+        <where>
+            <if test="workOrderId != null">AND f.work_order_id=#{workOrderId}</if>
+            <if test="lotId != null">AND f.finished_lot_id=#{lotId}</if>
+            <if test="lotNo != ''">AND LOCATE(#{lotNo},CONVERT(f.lot_no USING utf8mb4)) &gt; 0</if>
+            <if test="keyword != ''">AND (LOCATE(#{keyword},CONVERT(i.item_code USING utf8mb4)) &gt; 0 OR LOCATE(#{keyword},i.item_name) &gt; 0)</if>
+        </where> ORDER BY q.inspection_id DESC
+    </select>
+    <select id="findById" resultType="com.taehyung.mes.quality.QualityInspection">
+        SELECT <include refid="columns"/> <include refid="joins"/> WHERE q.inspection_id=#{inspectionId}
+    </select>
+    <select id="findByReceipt" resultType="com.taehyung.mes.quality.QualityInspection">
+        SELECT <include refid="columns"/> <include refid="joins"/> WHERE q.receipt_id=#{receiptId}
+    </select>
+    <sql id="lotColumns">f.finished_lot_id,f.work_order_id,f.lot_no,i.item_code AS product_code,i.item_name AS product_name,
+        w.status AS work_order_status,w.product_unit_code,w.inspection_target_qty,
+        (SELECT COALESCE(SUM(q.inspected_qty),0) FROM quality_inspection q WHERE q.finished_lot_id=f.finished_lot_id) AS inspected_qty,
+        (SELECT COALESCE(SUM(q.accepted_qty),0) FROM quality_inspection q WHERE q.finished_lot_id=f.finished_lot_id) AS accepted_qty,
+        (SELECT COALESCE(SUM(q.rejected_qty),0) FROM quality_inspection q WHERE q.finished_lot_id=f.finished_lot_id) AS rejected_qty,
+        (SELECT COALESCE(MAX(q.round_no),0) FROM quality_inspection q WHERE q.finished_lot_id=f.finished_lot_id) AS last_round_no</sql>
+    <sql id="lotJoins">FROM finished_goods_lot f JOIN work_order w ON w.work_order_id=f.work_order_id
+        JOIN item i ON i.item_id=w.product_item_id</sql>
+    <select id="findLot" resultType="com.taehyung.mes.quality.QualityInspectionLot">
+        SELECT <include refid="lotColumns"/> <include refid="lotJoins"/> WHERE f.finished_lot_id=#{lotId}
+    </select>
+    <select id="findEligibleLots" resultType="com.taehyung.mes.quality.QualityInspectionLot">
+        SELECT <include refid="lotColumns"/> <include refid="lotJoins"/> WHERE w.status='COMPLETED'
+        ORDER BY f.finished_lot_id DESC
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="inspectionId" keyColumn="inspection_id">
+        INSERT INTO quality_inspection(finished_lot_id,receipt_id,round_no,inspected_qty,accepted_qty,rejected_qty,
+            inspected_at,inspector_ref,judgement_reason,created_by)
+        VALUES (#{finishedLotId},#{receiptId},#{roundNo},#{inspectedQty},#{acceptedQty},#{rejectedQty},
+            UTC_TIMESTAMP(6),#{inspectorRef},#{judgementReason},#{createdBy})
+    </insert>
+    <insert id="claimReceipt" useGeneratedKeys="true" keyProperty="receiptId" keyColumn="receipt_id">
+        INSERT INTO request_receipt(scope_key,operation_code,request_key,payload_fingerprint,created_by)
+        VALUES (#{scopeKey},'QUALITY_INSPECTION',#{requestKey},#{payloadFingerprint},#{createdBy})
+    </insert>
+    <select id="findReceipt" resultType="com.taehyung.mes.quality.QualityInspectionReceipt">
+        SELECT receipt_id,scope_key,operation_code,request_key,payload_fingerprint,
+            initial_outcome_snapshot AS snapshot,processed_at,created_by FROM request_receipt
+        WHERE scope_key=#{scopeKey} AND operation_code='QUALITY_INSPECTION' AND request_key=#{requestKey}
+    </select>
+    <update id="finishReceipt">
+        UPDATE request_receipt SET initial_outcome_snapshot=#{snapshot},processed_at=UTC_TIMESTAMP(6)
+        WHERE receipt_id=#{receiptId} AND operation_code='QUALITY_INSPECTION' AND processed_at IS NULL AND initial_outcome_snapshot IS NULL
+    </update>
+    <select id="countReceiptResults" resultType="int">
+        SELECT (SELECT COUNT(*) FROM production_result WHERE receipt_id=#{receiptId})
+             + (SELECT COUNT(*) FROM material_consumption WHERE receipt_id=#{receiptId})
+             + (SELECT COUNT(*) FROM material_return WHERE receipt_id=#{receiptId})
+             + (SELECT COUNT(*) FROM quality_inspection WHERE receipt_id=#{receiptId})
+    </select>
+</mapper>

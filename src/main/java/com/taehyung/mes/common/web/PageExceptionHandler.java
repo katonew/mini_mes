@@ -8,6 +8,8 @@ import com.taehyung.mes.production.ProductionPlanNotFoundException;
 import com.taehyung.mes.workorder.WorkOrderNotFoundException;
 import com.taehyung.mes.lot.RawMaterialLotNotFoundException;
 import com.taehyung.mes.lot.MaterialConsumptionNotFoundException;
+import com.taehyung.mes.lot.MaterialReturnNotFoundException;
+import com.taehyung.mes.production.ProductionResultNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.InvalidPropertyException;
 import org.slf4j.Logger;
@@ -22,6 +24,26 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class PageExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(PageExceptionHandler.class);
+
+    @ExceptionHandler(ProductionResultNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String productionResultNotFound(Model model, HttpServletRequest request) {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        boolean lot = path.startsWith("/finished-goods-lots/");
+        model.addAttribute("safeTitle", lot ? "완제품 LOT을 찾을 수 없습니다" : "생산실적을 찾을 수 없습니다");
+        model.addAttribute("safeMessage", lot ? "완제품 LOT 목록에서 다시 선택해 주세요." : "생산실적 목록에서 다시 선택해 주세요.");
+        model.addAttribute("activeMenu", lot ? "finished-goods-lots" : "production-results");
+        return "error";
+    }
+
+    @ExceptionHandler(MaterialReturnNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String materialReturnNotFound(Model model) {
+        model.addAttribute("safeTitle", "원자재 반환 이력을 찾을 수 없습니다");
+        model.addAttribute("safeMessage", "원자재 반환 목록에서 대상을 다시 선택해 주세요.");
+        model.addAttribute("activeMenu", "material-returns");
+        return "error";
+    }
 
     @ExceptionHandler(MaterialConsumptionNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -100,6 +122,10 @@ public class PageExceptionHandler {
         if (path.equals("/work-orders") || path.startsWith("/work-orders/")) { model.addAttribute("activeMenu", "work-orders"); }
         if (path.equals("/raw-material-lots") || path.startsWith("/raw-material-lots/")) { model.addAttribute("activeMenu", "raw-material-lots"); }
         if (path.equals("/material-consumptions") || path.startsWith("/material-consumptions/")) { model.addAttribute("activeMenu", "material-consumptions"); }
+        if (path.equals("/material-returns") || path.startsWith("/material-returns/")) { model.addAttribute("activeMenu", "material-returns"); }
+        if (path.equals("/production-results") || path.startsWith("/production-results/")) { model.addAttribute("activeMenu", "production-results"); }
+        if (path.equals("/finished-goods-lots") || path.startsWith("/finished-goods-lots/")) { model.addAttribute("activeMenu", "finished-goods-lots"); }
+        if (path.equals("/quality-inspections") || path.startsWith("/quality-inspections/") || path.matches("/finished-goods-lots/[0-9]+/inspections")) { model.addAttribute("activeMenu", "quality-inspections"); }
         return "error";
     }
 
@@ -127,6 +153,10 @@ public class PageExceptionHandler {
         if (path.equals("/work-orders") || path.startsWith("/work-orders/")) { model.addAttribute("activeMenu", "work-orders"); }
         if (path.equals("/raw-material-lots") || path.startsWith("/raw-material-lots/")) { model.addAttribute("activeMenu", "raw-material-lots"); }
         if (path.equals("/material-consumptions") || path.startsWith("/material-consumptions/")) { model.addAttribute("activeMenu", "material-consumptions"); }
+        if (path.equals("/material-returns") || path.startsWith("/material-returns/")) { model.addAttribute("activeMenu", "material-returns"); }
+        if (path.equals("/production-results") || path.startsWith("/production-results/")) { model.addAttribute("activeMenu", "production-results"); }
+        if (path.equals("/finished-goods-lots") || path.startsWith("/finished-goods-lots/")) { model.addAttribute("activeMenu", "finished-goods-lots"); }
+        if (path.equals("/quality-inspections") || path.startsWith("/quality-inspections/") || path.matches("/finished-goods-lots/[0-9]+/inspections")) { model.addAttribute("activeMenu", "quality-inspections"); }
         return "error";
     }
 }

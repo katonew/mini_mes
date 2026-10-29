@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('원자재 반환 상세', ~{::main})}">
+<head><title>원자재 반환 상세</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/material-returns(consumptionId=${materialReturn.consumptionId})}">← 원소비의 반환 이력</a>
+    <section class="page-heading"><div><p class="eyebrow">PRODUCTION / MATERIAL RETURNS</p><h1>원자재 반환 상세</h1><p class="page-description" th:text="${'반환 ' + materialReturn.returnId + ' · ' + materialReturn.lotNo}"></p></div></section>
+    <section class="panel search-panel"><div class="section-heading"><h2>실제 반환 기록</h2></div><dl class="row mb-0 bom-summary">
+        <dt class="col-sm-4">원소비</dt><dd class="col-sm-8"><a class="item-code" th:href="@{/material-consumptions/{id}(id=${materialReturn.consumptionId})}" th:text="${materialReturn.consumptionId}"></a></dd>
+        <dt class="col-sm-4">작업지시 / 현재 상태</dt><dd class="col-sm-8"><a class="item-code" th:href="@{/work-orders/{id}(id=${materialReturn.workOrderId})}" th:text="${materialReturn.workOrderId}"></a><span th:text="${' / ' + materialReturn.workOrderStatus}"></span></dd>
+        <dt class="col-sm-4">원자재 LOT</dt><dd class="col-sm-8"><a class="item-code" th:href="@{/raw-material-lots/{id}(id=${materialReturn.rawLotId})}" th:text="${materialReturn.lotNo}"></a></dd>
+        <dt class="col-sm-4">원자재 코드·명칭</dt><dd class="col-sm-8" th:text="${materialReturn.itemCode + ' · ' + materialReturn.itemName}"></dd>
+        <dt class="col-sm-4">반환수량</dt><dd class="col-sm-8" th:text="${materialReturn.returnedQty.stripTrailingZeros().toPlainString() + ' ' + materialReturn.unitCode}"></dd>
+        <dt class="col-sm-4">반환사유</dt><dd class="col-sm-8 text-break" th:text="${materialReturn.reason}"></dd>
+        <dt class="col-sm-4">반환시각 (KST)</dt><dd class="col-sm-8" th:text="${@kstDateTimeFormatter.formatUtc(materialReturn.returnedAt, 'yyyy-MM-dd HH:mm:ss.SSSSSS')}"></dd>
+        <dt class="col-sm-4">작성자</dt><dd class="col-sm-8" th:text="${materialReturn.createdBy}"></dd>
+        <dt class="col-sm-4">반환 당시 복원 전 가용수량</dt><dd class="col-sm-8" th:text="${materialReturn.outcome.availableBefore + ' ' + materialReturn.unitCode}"></dd>
+        <dt class="col-sm-4">반환 당시 복원 후 가용수량</dt><dd class="col-sm-8" th:text="${materialReturn.outcome.availableAfter + ' ' + materialReturn.unitCode}"></dd>
+        <dt class="col-sm-4">현재 LOT 가용수량</dt><dd class="col-sm-8" th:text="${materialReturn.availableQty.stripTrailingZeros().toPlainString() + ' ' + materialReturn.unitCode}"></dd>
+        <dt class="col-sm-4">원소비 / 기반환 / 반환가능수량</dt><dd class="col-sm-8" th:text="${materialReturn.consumedQty.stripTrailingZeros().toPlainString() + ' / ' + materialReturn.totalReturnedQty.stripTrailingZeros().toPlainString() + ' / ' + materialReturn.returnableQty.stripTrailingZeros().toPlainString() + ' ' + materialReturn.unitCode}"></dd>
+    </dl><p class="form-text mb-0">반환 당시 재고 전후값은 최초 성공 결과로 보존됩니다. 현재 재고·기반환수량과 구분합니다. 원소비 기록과 생산실적·완제품 LOT 수량은 반환으로 변경하지 않습니다.</p></section>
+</main></body></html>

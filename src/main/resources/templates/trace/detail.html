@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('완제품 LOT 역추적', ~{::main})}"><head><title>완제품 LOT 역추적</title></head><body><main id="main-content" th:with="lot=${trace.lot}, order=${trace.order}">
+    <a class="back-link" th:href="@{/finished-goods-lots/{id}(id=${lot.finishedLotId})}">← 완제품 LOT 상세</a>
+    <section class="page-heading"><div><p class="eyebrow">LOT / TRACEABILITY</p><h1 th:text="${lot.lotNo + ' 역추적'}"></h1><p class="page-description">실제로 저장된 연결 관계와 소비·반환·생산·검사 이력을 조회합니다.</p></div></section>
+    <div class="alert alert-info" role="note">작업지시 전체 수준의 추적입니다. 원자재 사용량을 개별 생산실적이나 제품에 배분하지 않습니다. 품목 코드·명칭은 현재 기준정보이며 공정명은 저장 당시 스냅샷과 구분합니다. 페이지 내 조회는 하나의 읽기 전용 트랜잭션으로 수행합니다.</div>
+    <div th:if="${!#lists.isEmpty(trace.warnings)}" class="alert alert-warning" role="alert"><strong>데이터 확인 필요</strong><ul class="mb-0 mt-1"><li th:each="warning : ${trace.warnings}" th:text="${warning}"></li></ul><p class="mb-0 mt-2">조회된 원본 수량을 그대로 표시합니다. 이 화면에서 원본을 수정하거나 수량을 보정하지 않습니다.</p></div>
+
+    <section class="panel search-panel"><div class="section-heading"><h2>완제품 LOT · 생산 근거</h2></div><dl class="row mb-0 bom-summary">
+        <dt class="col-sm-3">완제품 LOT</dt><dd class="col-sm-9"><a th:href="@{/finished-goods-lots/{id}(id=${lot.finishedLotId})}" th:text="${lot.lotNo}"></a></dd>
+        <dt class="col-sm-3">완제품 (현재 코드·명칭)</dt><dd class="col-sm-9" th:text="${lot.productCode + ' · ' + lot.productName}"></dd>
+        <dt class="col-sm-3">작업지시 / 상태</dt><dd class="col-sm-9"><a th:href="@{/work-orders/{id}(id=${lot.workOrderId})}" th:text="${lot.workOrderId}"></a><span th:text="${' / ' + lot.workOrderStatus}"></span></dd>
+        <dt class="col-sm-3">LOT 생성일시 (KST)</dt><dd class="col-sm-9" th:text="${@kstDateTimeFormatter.formatUtc(lot.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+        <th:block th:if="${order != null}">
+            <dt class="col-sm-3">생산계획</dt><dd class="col-sm-9"><a th:href="@{/production-plans/{id}(id=${order.productionPlanId})}" th:text="${order.productionPlanId}"></a></dd>
+            <dt class="col-sm-3">작업지시 수량</dt><dd class="col-sm-9" th:text="${order.orderedQty.stripTrailingZeros().toPlainString() + ' ' + order.productUnitCode}"></dd>
+            <dt class="col-sm-3">확정 BOM 버전</dt><dd class="col-sm-9"><a th:href="@{/boms/versions/{id}(id=${order.bomVersionId})}" th:text="${order.bomCode + ' V' + order.bomVersionNo + ' · PK ' + order.bomVersionId}"></a></dd>
+            <dt class="col-sm-3">확정 Routing 개정</dt><dd class="col-sm-9"><a th:href="@{/routings/revisions/{id}(id=${order.routingRevisionId})}" th:text="${order.routingCode + ' R' + order.routingRevisionNo + ' · PK ' + order.routingRevisionId}"></a></dd>
+        </th:block>
+    </dl><p th:if="${order == null}" class="form-text mb-0">연결된 작업지시 기준정보: 기록 없음</p></section>
+
+    <section class="panel list-panel"><div class="list-heading"><h2>확정 Routing 공정 경로</h2></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">순서</th><th scope="col">공정 코드 (현재)</th><th scope="col">저장 당시 공정명</th><th scope="col">현재 공정명</th></tr></thead><tbody>
+        <tr th:each="step : ${trace.steps}"><td th:text="${step.stepNo}"></td><td th:text="${step.processCode}"></td><td th:text="${step.processNameSnapshot}"></td><td th:text="${step.currentProcessName}"></td></tr>
+        <tr th:if="${#lists.isEmpty(trace.steps)}"><td colspan="4" class="empty-state">공정 기록 없음</td></tr>
+    </tbody></table></div></section>
+
+    <section class="panel search-panel"><div class="section-heading"><h2>누적 생산수량</h2></div><dl class="row mb-0 bom-summary">
+        <dt class="col-sm-3">실적 건수</dt><dd class="col-sm-9" th:text="${trace.totals.resultCount}"></dd>
+        <dt class="col-sm-3">생산 / 생산 양품 / 생산 불량</dt><dd class="col-sm-9" th:text="${trace.totals.producedQty.stripTrailingZeros().toPlainString() + ' / ' + trace.totals.goodQty.stripTrailingZeros().toPlainString() + ' / ' + trace.totals.defectQty.stripTrailingZeros().toPlainString() + ' EA'}"></dd>
+    </dl><p class="form-text mb-0">해당 완제품 LOT에 연결된 현재 유효 생산실적만 합산합니다. 정정 이력은 합산하지 않습니다.</p></section>
+    <section class="panel list-panel"><div class="list-heading"><h2>생산실적 이력</h2></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">실적</th><th scope="col">생산일시 (KST)</th><th scope="col">작업자</th><th scope="col">생산수량 (EA)</th><th scope="col">양품수량 (EA)</th><th scope="col">불량수량 (EA)</th></tr></thead><tbody>
+        <tr th:each="row : ${trace.results}"><td><a th:href="@{/production-results/{id}(id=${row.productionResultId})}" th:text="${row.productionResultId}"></a></td><td th:text="${@kstDateTimeFormatter.formatUtc(row.producedAt, 'yyyy-MM-dd HH:mm:ss')}"></td><td th:text="${row.workerRef}"></td><td th:text="${row.producedQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.goodQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.defectQty.stripTrailingZeros().toPlainString()}"></td></tr>
+        <tr th:if="${#lists.isEmpty(trace.results)}"><td colspan="6" class="empty-state">생산실적 기록 없음</td></tr>
+    </tbody></table></div></section>
+
+    <section class="panel list-panel"><div class="list-heading"><h2>실제 원자재 소비 · 연결된 반환</h2><span class="count-pill" th:text="${#lists.size(trace.usages)}"></span></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">원소비</th><th scope="col">원자재 (현재 코드·명칭)</th><th scope="col">원자재 LOT</th><th scope="col">단위</th><th scope="col">소비</th><th scope="col">반환</th><th scope="col">순소비</th><th scope="col">소비일시 (KST)</th><th scope="col">연결된 반환 이력</th></tr></thead><tbody>
+        <tr th:each="usage : ${trace.usages}" th:with="source=${usage.source}">
+            <td><a th:href="@{/material-consumptions/{id}(id=${source.consumptionId})}" th:text="${source.consumptionId}"></a></td>
+            <td th:text="${source.itemCode + ' · ' + source.itemName}"></td><td><a th:href="@{/raw-material-lots/{id}(id=${source.rawLotId})}" th:text="${source.lotNo}"></a></td>
+            <td th:text="${source.unitCode}"></td><td th:text="${source.consumedQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${usage.returnedQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${usage.netConsumedQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${@kstDateTimeFormatter.formatUtc(source.consumedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+            <td><div th:each="row : ${usage.returns}" class="mb-2"><a th:href="@{/material-returns/{id}(id=${row.returnId})}" th:text="${'반환 ' + row.returnId + ' · ' + row.returnedQty.stripTrailingZeros().toPlainString() + ' ' + row.unitCode}"></a><div class="subtle" th:text="${@kstDateTimeFormatter.formatUtc(row.returnedAt, 'yyyy-MM-dd HH:mm:ss')}"></div></div><span th:if="${#lists.isEmpty(usage.returns)}" class="subtle">반환 기록 없음</span></td>
+        </tr><tr th:if="${#lists.isEmpty(trace.usages)}"><td colspan="9" class="empty-state">원자재 소비 기록 없음</td></tr>
+    </tbody></table></div></section>
+    <section class="panel list-panel"><div class="list-heading"><h2>원자재 LOT별 합계</h2></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">원자재</th><th scope="col">원자재 LOT</th><th scope="col">단위</th><th scope="col">소비 합계</th><th scope="col">반환 합계</th><th scope="col">순소비 합계</th></tr></thead><tbody>
+        <tr th:each="row : ${trace.materialLots}"><td th:text="${row.source.itemCode + ' · ' + row.source.itemName}"></td><td><a th:href="@{/raw-material-lots/{id}(id=${row.source.rawLotId})}" th:text="${row.source.lotNo}"></a></td><td th:text="${row.source.unitCode}"></td><td th:text="${row.consumedQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.returnedQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.netConsumedQty.stripTrailingZeros().toPlainString()}"></td></tr>
+        <tr th:if="${#lists.isEmpty(trace.materialLots)}"><td colspan="6" class="empty-state">원자재 LOT 사용 기록 없음</td></tr>
+    </tbody></table></div></section>
+
+    <section class="panel list-panel"><div class="list-heading"><h2>당시 확정한 BOM 구성</h2></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">구성 ID</th><th scope="col">원자재</th><th scope="col">기준 생산수량 (EA)</th><th scope="col">기준 소요량</th><th scope="col">원자재 단위</th></tr></thead><tbody>
+        <tr th:each="row : ${trace.materials}"><td th:text="${row.bomComponentId}"></td><td th:text="${row.materialCode + ' · ' + row.materialName}"></td><td th:text="${row.baseQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.requiredQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.unitCode}"></td></tr>
+        <tr th:if="${#lists.isEmpty(trace.materials)}"><td colspan="5" class="empty-state">BOM 구성 기록 없음</td></tr>
+    </tbody></table></div></section>
+    <section class="panel list-panel"><div class="list-heading"><h2>BOM 예상량과 실제 순소비 비교</h2></div><p class="px-4 form-text">작업지시 전체 수량을 기준으로 비교합니다. 같은 원자재·단위의 BOM 구성 소요량을 합산하며 서로 다른 단위는 합산하지 않습니다. 차이 = 실제 순소비 − 예상량입니다. 유한 소수로 표현할 수 없는 값은 분수식으로 표시하며 반올림·절삭하지 않습니다.</p><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">원자재</th><th scope="col">단위</th><th scope="col">기준 소요량 합계</th><th scope="col">예상 소요량</th><th scope="col">실제 순소비</th><th scope="col">예상 대비 차이</th></tr></thead><tbody>
+        <tr th:each="row : ${trace.comparisons}"><td th:text="${row.materialCode + ' · ' + row.materialName}"></td><td th:text="${row.unitCode}"></td><td th:text="${row.materialRequiredQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.expectedQtyDisplay}"></td><td th:text="${row.netConsumedQty.stripTrailingZeros().toPlainString()}"></td><td th:text="${row.differenceDisplay}"></td></tr>
+        <tr th:if="${#lists.isEmpty(trace.comparisons)}"><td colspan="6" class="empty-state">비교 가능한 BOM 기록 없음 · 상단 경고를 확인해 주세요.</td></tr>
+    </tbody></table></div></section>
+
+    <section th:replace="~{quality/fragments :: summary(${trace.quality})}"></section>
+    <section class="panel list-panel"><div class="list-heading"><h2>품질검사 회차별 이력</h2><a th:href="@{/finished-goods-lots/{id}/inspections(id=${lot.finishedLotId})}">LOT 검사 이력 상세</a></div><div th:replace="~{quality/fragments :: rows(${trace.inspections})}"></div></section>
+    <p class="form-text">생산 불량과 검사 불합격은 별도 수량입니다. LOT 전체 PASS/FAIL 상태를 생성하지 않습니다. 개별 제품 시리얼·물리적 중복 검사 여부·개별 실적별 원자재 귀속은 이 데이터로 확인할 수 없습니다.</p>
+</main></body></html>

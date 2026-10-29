@@ -74,6 +74,7 @@ public class WorkOrderService {
         if (order == null) { throw new WorkOrderNotFoundException(); }
         WorkOrderDetails details = new WorkOrderDetails(); details.setOrder(order); details.setTotals(mapper.findTotals(id));
         details.setSteps(routings.findSteps(order.getRoutingRevisionId()));
+        details.setFinishedLot(mapper.findFinishedLot(id)); details.setResults(mapper.findProductionResults(id));
         details.setCompletionReady(completionReady(order, details.getTotals()));
         return details;
     }
@@ -144,8 +145,27 @@ public class WorkOrderService {
         if (!completionReady(order, mapper.findTotals(id))) { throw rule(null, "진행 중이며 실제 생산실적이 존재하고 누적 생산수량이 지시수량과 같아야 완료할 수 있습니다."); }
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void complete(Long id) {
+        requireId(id); String completedBy = actor();
+        WorkOrder order = mapper.findByIdForUpdate(id);
+        if (order == null) { throw new WorkOrderNotFoundException(); }
+        WorkOrderTotals totals = mapper.findTotals(id);
+        if (!completionReady(order, totals)) {
+            throw rule(null, "진행 중이며 생산실적이 있고 누적 생산수량이 지시수량과 같을 때만 완료할 수 있습니다.");
+        }
+        if (totals.getGoodQty() == null || totals.getDefectQty() == null
+                || totals.getGoodQty().signum() < 0 || totals.getDefectQty().signum() < 0
+                || totals.getGoodQty().add(totals.getDefectQty()).compareTo(totals.getProducedQty()) != 0
+                || totals.getGoodQty().compareTo(order.getOrderedQty()) > 0) {
+            throw new DataIntegrityViolationException("Production totals are inconsistent at completion.");
+        }
+        requireOne(mapper.complete(id, totals.getGoodQty(), completedBy));
+    }
+
     private boolean completionReady(WorkOrder order, WorkOrderTotals totals) {
-        return "IN_PROGRESS".equals(order.getStatus()) && totals.getResultCount() > 0 && totals.getProducedQty().signum() > 0
+        return totals != null && totals.getResultCount() != null && totals.getProducedQty() != null
+                && "IN_PROGRESS".equals(order.getStatus()) && totals.getResultCount() > 0 && totals.getProducedQty().signum() > 0
                 && totals.getProducedQty().compareTo(order.getOrderedQty()) == 0;
     }
     private Map<Long, Item> lockItems(Long productId, List<BomComponent> components) {

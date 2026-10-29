@@ -192,6 +192,17 @@ com.taehyung.mes
 
 작업과 직접 관련된 파일만 확인한다.
 
+- 이미 확인한 프로젝트 구조, DB 스키마, 설정, 권한은 변경 근거가 없는 한 반복 조회하지 않는다.
+- 단순 오류 수정은 오류가 발생한 파일과 직접 관련된 코드부터 확인한다.
+- 빌드·테스트 로그는 실패 요약과 핵심 오류부터 확인하고, 필요한 경우에만 관련 상세 로그를 조회한다.
+- 동일한 검증 명령을 이유 없이 반복 실행하지 않는다.
+- 이미 생성한 테스트 DB와 계정은 매번 재생성하거나 전체 구조를 재검증하지 않는다. 접속 대상과 권한 등 필수 안전 확인은 유지한다.
+- 독립 리뷰 에이전트는 명시적으로 요청받거나 위험도가 높은 변경에 필요한 경우에만 사용한다.
+- 작업 계획과 진행 보고를 불필요하게 반복 작성하지 않는다.
+- 작은 수정은 관련 파일 확인 → 최소 변경 → 승인된 필요한 테스트 → 결과 보고 순서로 수행한다.
+- 기존 Graphify 사용 규칙을 유지하고, 관련 코드 탐색에 도움이 되는 경우에만 사용한다.
+- 토큰 절약을 이유로 데이터 손상 방지, 트랜잭션 정합성, 보안 검증을 생략하지 않는다.
+
 빌드, 테스트, 린트는 자동 실행하지 않는다.
 
 검증 실행이 필요하다고 판단하면 먼저 다음을 알려준다.
@@ -367,3 +378,17 @@ Implementation Convenience
 ```
 
 구현을 단순하게 만들기 위해 Business Rule이나 데이터 정합성을 희생하지 않는다.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+
+Rules:
+- Use Graphify first when relevant code exploration or dependency analysis is needed; do not invoke it for a simple edit to files already identified. Before a graph-based lookup, use changed-file information already established in the current task to assess freshness. Run `graphify update .` before `graphify query "<question>"` only when there is evidence that relevant code is newer than the graph. Include this rule in subagent prompts that explore code. For graph-based exploration, read raw files only for lines the graph or an earlier read already located. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- Dirty graphify-out/ files are expected after hooks or incremental updates and are not a reason to skip a Graphify lookup needed for code exploration or dependency analysis.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- Treat `graphify update .` as a tool operation that does not change source code. If an existing approval rule explicitly requires approval for that operation, obtain it before running the update.
+- A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.

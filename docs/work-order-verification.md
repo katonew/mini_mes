@@ -1,5 +1,7 @@
 # 작업지시 구현 및 검증 안내
 
+> 이 문서는 6차 작업지시 구현 당시 기록이다. 10차 생산실적·완제품 LOT·완료 동작은 BR-15와 production-result-verification.md의 후속 기록을 따른다.
+
 ## 화면과 URL
 
 | 기능 | GET | POST |

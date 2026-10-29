@@ -35,6 +35,13 @@ class WorkOrderControllerTests {
         doThrow(new WorkOrderRuleException(null, "완료 미지원")).when(service).transition(eq(9L), any());
         mvc.perform(post("/work-orders/9/transitions").param("action", "COMPLETE")).andExpect(flash().attribute("actionError", "완료 미지원"));
     }
+    @Test void separateCompletionActionRedirectsAndReportsCurrentRuleFailure() throws Exception {
+        mvc.perform(post("/work-orders/9/complete")).andExpect(redirectedUrl("/work-orders/9"))
+                .andExpect(flash().attributeExists("successMessage"));
+        doThrow(new WorkOrderRuleException(null, "수량 미달")).when(service).complete(9L);
+        mvc.perform(post("/work-orders/9/complete")).andExpect(redirectedUrl("/work-orders/9"))
+                .andExpect(flash().attribute("actionError", "수량 미달"));
+    }
     @Test void missingAndStorageErrorsHaveSafeResponses() throws Exception {
         when(service.get(99L)).thenThrow(new WorkOrderNotFoundException());
         mvc.perform(get("/work-orders/99")).andExpect(status().isNotFound()).andExpect(model().attribute("activeMenu", "work-orders"));

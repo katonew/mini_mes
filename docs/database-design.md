@@ -8,7 +8,7 @@
 
 표의 자료형·컬럼·인덱스는 물리 추천안이다. 승인된 업무 정책은 유지하며 미확정 업무 정책은 '설계 결정 필요'로 표시한다. 특히 LOT 번호 유일성 범위, 개별 행 0수량 허용, 원자재 기록 오류 정정, 불량 상세 합계 정책을 임의 확정하지 않는다. 이 문서는 즉시 전체 스키마를 배포해도 된다는 승인 문서가 아니다.
 
-후속 승인 반영: 원자재 LOT 등록은 BR-12, 8차 원자재 실제 소비·Receipt 계약은 BR-13과 10.1.1절로 확정했다. 아래 일반 추천안/미확정 표현은 해당 승인 범위를 제외한 후속 업무에 적용한다. 실제 DDL인 schema.sql은 이번 구현에서 변경하지 않았다.
+후속 승인 반영: 원자재 LOT 등록은 BR-12, 8차 원자재 실제 소비·Receipt 계약은 BR-13과 10.1.1절, 9차 실제 반환·Receipt 계약은 BR-14와 10.4.1절로 확정했다. 아래 일반 추천안/미확정 표현은 해당 승인 범위를 제외한 후속 업무에 적용한다. 실제 DDL인 schema.sql은 이번 구현에서 변경하지 않았다.
 
 ## 2. 사용 DB 및 전제조건
 
@@ -222,9 +222,9 @@ CHECK: ordered_qty >= 0, status IN ('READY','IN_PROGRESS','COMPLETED','CANCELLED
 |---|---|---|---|---|
 | finished_lot_id | BIGINT UNSIGNED | N | AI | PK |
 | work_order_id | BIGINT UNSIGNED | N | 없음 | work_order FK, 작업지시당 LOT 하나 |
-| lot_no | VARCHAR(64), 코드 | N | 없음 | 완제품 LOT 번호, 유일성 범위 승인 필요 |
+| lot_no | VARCHAR(64), ASCII 코드 | N | 없음 | 10차 승인: 최초 실적에서 사용자 입력, 완제품 LOT 전체 전역 유일 |
 
-PK finished_lot_id, FK work_order_id → work_order. **UK uq_fg_work_order(work_order_id)**. CHECK 별도 없음. lot_no UK 후보는 5절. 생산·양품·불량·검사 합계는 저장하지 않는다. LOT 품질 요약 상태 컬럼도 상태 정책 결정 전에는 추가하지 않는다.
+PK finished_lot_id, FK work_order_id → work_order. **UK uq_fg_work_order(work_order_id), uq_fg_lot_no(lot_no)**. CHECK 별도 없음. 생산·양품·불량·검사 합계는 저장하지 않는다. LOT 품질 요약 상태 컬럼도 상태 정책 결정 전에는 추가하지 않는다.
 
 ### 4.12 production_result
 
@@ -241,7 +241,7 @@ PK finished_lot_id, FK work_order_id → work_order. **UK uq_fg_work_order(work_
 | revision_no | INT UNSIGNED | N | 1 | 정정 동시성·이력 버전 |
 | updated_at | DATETIME(6) | N | CURRENT_TIMESTAMP(6) | 현재값 갱신시각 |
 
-PK production_result_id, FK finished_lot_id → finished_goods_lot, receipt_id → request_receipt. UK uq_result_receipt(receipt_id). INDEX ix_result_lot(finished_lot_id). CHECK produced_qty >= 0, good_qty >= 0, defect_qty >= 0, produced_qty = good_qty + defect_qty, revision_no > 0. 개별 0생산 실적 허용은 미확정이므로 DB 비음수 조건과 Service 정책 결정을 구분한다. work_order_id를 중복 저장하지 않고 LOT을 통해 찾는다.
+PK production_result_id, FK finished_lot_id → finished_goods_lot, receipt_id → request_receipt. UK uq_result_receipt(receipt_id). INDEX ix_result_lot(finished_lot_id). CHECK produced_qty >= 0, good_qty >= 0, defect_qty >= 0, produced_qty = good_qty + defect_qty, revision_no > 0. 10차 신규 실적은 Service에서 양의 EA 정수 생산수량을 요구한다. work_order_id를 중복 저장하지 않고 LOT을 통해 찾는다.
 
 ### 4.13 production_result_correction
 
@@ -400,7 +400,7 @@ FK의 부모 컬럼은 모두 PK를 참조한다. 자식 FK 컬럼의 타입·�
 | 대상 | 대안 1 | 대안 2 | 구현 전 결정 |
 |---|---|---|---|
 | 원자재 LOT | UNIQUE(lot_no) | UNIQUE(item_id,lot_no) | 전역 또는 품목별 유일성 |
-| 완제품 LOT | UNIQUE(lot_no) | 품목별 번호: 별도 제품 키 포함 구조 필요 | 현 LOT에 product_item_id가 없으므로 업무 확정 후 복합 FK로 일치 보장하거나 전역 번호 선택 |
+| 완제품 LOT | UNIQUE(lot_no) 적용 | 품목별 번호는 이번 승인 범위 밖 | 10차 승인: 완제품 LOT 전체 전역 유일, 사용자 입력 |
 | item 코드 | 기존 schema.sql의 전역 UNIQUE 확정 | 품목 화면에서도 사전 조회와 DB UNIQUE로 보호 | 조직·공장 범위 키를 추가하지 않음 |
 | process/bom/routing 코드 | 각각 코드 단독 UK 후보 | 승인된 업무 범위 키 + 코드 UK | 이번 품목 화면 보완에서 타 도메인 정책 변경 없음 |
 
@@ -450,7 +450,7 @@ FK의 부모 컬럼은 모두 PK를 참조한다. 자식 FK 컬럼의 타입·�
 
 ### 7.2 기준정보 버전 보존
 
-**6차 작업지시 구현(BR-11):** READ_COMMITTED에서 Plan → BOM 헤더 → Routing 헤더 → BOMVersion → RoutingRevision → Item(PK순) → Process(PK순)으로 잠근다. 기존 편집/개정 추가의 상대 순서를 유지한다. first_used_at NULL만 기록하고 지시 INSERT와 원자 저장한다. 신규 수량은 1 이상 정수, 현재 미사용 공정 포함 개정은 신규 지시 거부로 확정했다. 시작/취소는 WorkOrder만 잠그며 참조·사용 표시를 변경하지 않는다. 아래 후속 작업지시 설명 중 등록·시작·취소는 현재 구현으로 구체화되었고 생산실적·완료 갱신은 후속 범위다.
+**6차 작업지시 구현(BR-11):** READ_COMMITTED에서 Plan → BOM 헤더 → Routing 헤더 → BOMVersion → RoutingRevision → Item(PK순) → Process(PK순)으로 잠근다. 기존 편집/개정 추가의 상대 순서를 유지한다. first_used_at NULL만 기록하고 지시 INSERT와 원자 저장한다. 신규 수량은 1 이상 정수, 현재 미사용 공정 포함 개정은 신규 지시 거부로 확정했다. 시작/취소는 WorkOrder만 잠그며 참조·사용 표시를 변경하지 않는다. 10차 생산실적·완료 갱신은 BR-15를 따른다.
 
 **Routing 구현 현황(BR-09):** 등록·새 개정·이력 조회를 제공한다. 미사용 개정 직접 수정 정책은 여전히 미확정이며 이번에 UPDATE/DELETE를 구현하지 않는다. 아래 보존 규약 중 Routing 편집과 작업지시 생성은 향후 구현 시 적용할 사항이다. 새 개정 저장은 Routing 헤더 → Item → Process(PK순) 잠금이며, 신규 헤더는 Item → Process(PK순)이다.
 
@@ -616,7 +616,18 @@ consumedQty=<정규화 수량>
 
 ### 10.4 반환·정정 요청의 남은 재시도 문제
 
-일반 실적 정정은 expected revision으로 오래된 요청의 반복 변경을 차단한다. 실제 반환의 순소비 상한은 중복 요청 자체를 식별하지는 못한다. 실제 20개 반환 요청이 두 번 입력되고 순소비가 충분하면 두 번 모두 상한 이내일 수 있다. 기존 schema.sql에는 MATERIAL_RETURN operation과 material_return.receipt_id FK/UNIQUE가 이미 존재한다. 이번 소비 구현은 이를 변경하거나 반환을 구현하지 않는다. **반환의 구체적인 요청 범위·payload·재응답 계약은 구현 전 기술 설계 결정 필요**이며, 물리 반환과 기록 오류 보정을 섞어서 해결하지 않는다.
+일반 실적 정정의 재시도 계약은 후속 결정이다. 실제 반환의 순소비 상한만으로는 동일 요청 재전송을 식별할 수 없다. 반환은 9차 개발자 승인으로 아래 계약을 확정했다.
+
+### 10.4.1 9차 원자재 반환 승인 계약 및 구현
+
+- 기존 MATERIAL_RETURN operation, request_receipt의 (scope_key,operation_code,request_key) UK, material_return.receipt_id FK/UNIQUE를 그대로 사용한다. schema.sql 변경·migration은 없다.
+- scope/UUID/실패 후 키 유지/성공 재응답은 BR-14를 따른다. fingerprint 고정 순서는 MATERIAL_RETURN:v1, consumptionId, returnedQty, reason이며 LF 구분, 마지막 추가 개행 없음이다. 사유 원문과 정규화 수량을 해시와 실제 저장에 동일 사용한다.
+- 성공 snapshot JSON v1 필드: version, returnId, consumptionId, workOrderId, rawLotId, returnedQty, unitCode, reason, returnedAt, availableBefore, availableAfter. ID는 JSON 정수, 수량은 십진 문자열, 시각은 UTC yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'. 현재 잔고로 과거 snapshot을 다시 계산하지 않는다.
+- REQUIRES_NEW/READ_COMMITTED: Receipt INSERT→원소비 부모 ID 비잠금 조회→WorkOrder FOR UPDATE/IN_PROGRESS 검증→원소비 FOR UPDATE/부모 관계 확인→RawLot FOR UPDATE→최신 반환합 검증→조건부 가용수량 증가→반환 INSERT→성공 JSON/processed_at 기록→Receipt 종류별 결과 합계 1건 확인. 원소비를 UPDATE/DELETE하지 않는다.
+- 조건부 복원은 quantity <= registered_qty-available_qty 및 quantity <= DECIMAL 최대값-available_qty로 보호한다. Service에서도 동일 상한을 검증하며 영향행수/PK 오류 포함 전체 롤백한다.
+- Receipt 선점 UNIQUE 충돌만 별도 예외로 전달하고 실패 트랜잭션 종료 후 별도 새 읽기 트랜잭션에서 기존 성공을 확인한다. 기존 성공은 현재 완료 상태와 무관하게 반환 상세로 이동, 다른 payload는 키 재사용 오류다. 자동 재시도·부분 복구·Receipt 만료 없음.
+- 원소비별·LOT별 소비와 반환은 각각 집계한다. 완료 이력 조회 허용, 신규 반환 거부. 조회의 과거 재고와 현재 가용량을 구분한다.
+- MySQL 통합 테스트는 127.0.0.1의 별도 *_return_test 스키마와 MES_RETURN_MYSQL_TEST=LOCAL_TEST_ONLY opt-in 조건이다. 일반 DB_* 설정으로 접속하지 않는다. 실제 MySQL 실행 성공 여부는 별도 검증 기록을 따른다.
 
 ## 11. 주요 조회 구조 및 집계 중복 방지
 
@@ -702,7 +713,7 @@ C도 실제 반환 후 재소비가 일어난 경우만 A+새 소비로 표현�
 
 | 항목 | 필요한 결정 |
 |---|---|
-| LOT 번호·업무 코드 유일성 | 전역/품목별 범위·채번·ASCII 코드 허용. 최종 UK 작성 전 필요 |
+| LOT 번호·업무 코드 유일성 | 완제품 LOT은 10차 승인에 따라 전역 UNIQUE와 사용자 입력으로 확정. 그 밖의 미확정 업무 코드 정책은 별도 결정 |
 | 수량·단위 | EA 정수·원자재 소수 정밀도·변환·반올림·개별 0기록 허용 |
 | 소비 기록 오류 B/C | 허용 범위·실제 사실 확인·승인 주체·교정 원장 도입 여부. 물리 반환과 구분 |
 | 생산실적 취소 | 삭제·음수 상쇄·LOT 자동 삭제를 가정하지 않음 |

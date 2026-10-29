@@ -303,7 +303,7 @@ ITEM, WORK_ORDER, BOM_COMPONENT, REQUEST_RECEIPT, FINISHED_GOODS_LOT는 이전 �
 | RoutingRevision / Step | routing FK, (routing, revision_no) UK / revision·process FK, (revision, step_no) UK | BR-09: 등록·개정 추가·조회, 잠근 공정의 현재 명칭 스냅샷. 저장 개정 직접 수정은 미확정으로 제외. 병렬·반복 실행 정책을 추가하지 않음 |
 | ProductionPlan | product_item_id FK | BR-10: 실제 PK ID로 등록·조회·검색. 현행 계획코드/상태/업무 UK 없음. 변경·취소 정책은 미확정이며 직접 수정·삭제 없음 |
 | WorkOrder | plan·item·BOMVersion·RoutingRevision FK | BR-11: 제품 일치·양의 정수·현재 공정 활성 검증, 최초 사용과 지시 원자 저장. product_item_id·버전 PK 보존. 시작/시작 전 취소 제공 |
-| FinishedGoodsLot | work_order_id NOT NULL FK + UK | LOT 번호 유일성 범위와 번호 채번은 미확정. work_order_id의 NULL로 UK를 우회하지 않음 |
+| FinishedGoodsLot | work_order_id NOT NULL FK + UK, lot_no UK | 10차 승인: 최초 실적의 사용자 입력 번호를 완제품 LOT 전체에서 전역 유일하게 보존. 원자재 LOT 번호와의 상호 중복은 허용 |
 | ProductionResult | finished_lot FK, receipt FK + UK | 실적-LOT의 동일 작업지시 귀속은 단일 FK 경로로 표현 |
 | ResultCorrection | result FK, (result, to_revision) UK | 현재 revision과 이전·이후 체인의 연속성은 트랜잭션 검증 |
 | RawMaterialLot | item FK | LOT 번호 UK 범위·단위·등록량 정정 정책은 미확정 |
@@ -437,6 +437,12 @@ Receipt → WorkOrder → RawMaterialLot 순서와 조건부 차감·소비·성
 
 소비/반환 합계는 실제 원천을 독립 집계한다. BOM 예상량과 차이는 지시·원자재·보존 단위별 정확한 값 또는 나눗셈 식으로 표시한다. 반환 생성·재고 조정·실적·완제품 LOT·품질 기능과 스키마 변경은 포함하지 않는다. 실제 MySQL 성공 여부는 테스트 실행 전까지 미확인이다.
 
+### 11.4 9차 원자재 실제 반환 확정
+
+반환은 BR-14와 database-design.md 10.4.1절의 별도 승인 계약을 따른다. 기존 schema.sql은 MATERIAL_RETURN과 material_return.receipt_id FK/UNIQUE를 이미 지원하므로 변경하지 않는다. 위 일반 추천안 중 반환 요청 범위/재응답 미확정 표현은 이 승인 계약으로 대체한다.
+
+작성자 SHA-256 범위·UUID, 원소비 ID/정규화 반환수량/원문 사유 fingerprint, 최초 성공 JSON과 상세 재응답을 사용한다. Receipt→WorkOrder→기존 MaterialConsumption→RawMaterialLot 잠금과 최신 반환합 검증·조건부 가용량 복원·반환 INSERT·Receipt 성공 기록을 하나의 REQUIRES_NEW/READ_COMMITTED 트랜잭션으로 처리한다. 소비 원본 수정/삭제·재고 조정·생산실적/완제품 LOT/품질 기능은 추가하지 않는다. 실제 MySQL 경합 검증은 별도 승인 실행이 필요하다.
+
 ## 12. 트랜잭션 경계
 
 다음은 Spring Service 트랜잭션과 InnoDB를 전제로 한 B 기술 추천안이다. Mapper 여러 호출도 같은 트랜잭션·연결에 참여해야 한다. 업무 규칙은 Controller나 Mapper의 숨겨진 정책으로 분산하지 않는다.
@@ -553,7 +559,7 @@ InnoDB 잠금 읽기는 명시적인 트랜잭션 안에서 사용해야 하며 
 | 완료 LOT·참조 기준정보 삭제 | 보호 FK 추천과 실제 업무 삭제 정책 구분. 이력 연쇄 삭제 설계 금지 |
 | BOM·Routing 발행·변경 | BOM 사용 후 불변·미사용 버전 소요량 수정/구성 추가는 BR-07로 확정. BOM 발행·활성기간·다단계 구성 및 Routing 변경 정책은 후속 결정 |
 | 계획 변경·취소·초과 배분 / 지시 변경 | 과거 작업지시 기준·수량 변경 허용 범위를 승인 전 확정하지 않음 |
-| 단위·0수량·코드 유일성 | 정밀도·변환·개별 0기록·LOT 번호 유일성 범위·채번은 물리 설계 전 결정 |
+| 단위·0수량·코드 유일성 | 10차 신규 생산실적은 양의 EA 정수, 완제품 LOT은 전역 UNIQUE·사용자 입력으로 확정. 그 밖의 미확정 단위·코드 정책은 별도 결정 |
 | 불량 상세 정책 | 복수 원인 수량 중복과 부모 불량합 관계, 상세 정정 이력을 결정 |
 | 투입 기록 오류 정정의 의미 | 물리 반환과 기록 오류 보정을 구분. 미소비 자재를 반환한 것으로 기록하지 않음 |
 

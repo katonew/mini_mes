@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('품질검사 등록', ~{::main})}"><head><title>품질검사 등록</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/quality-inspections}">← 품질검사 목록</a>
+    <section class="page-heading"><div><p class="eyebrow">QUALITY / INSPECTIONS</p><h1>최종 품질검사 등록</h1><p class="page-description">COMPLETED 작업지시의 완제품 LOT만 검사합니다. 검사시각은 저장 순간 UTC로 기록됩니다.</p></div></section>
+    <section class="panel search-panel"><div class="section-heading"><h2>검사 대상 선택</h2></div><form method="get" th:action="@{/quality-inspections/new}" class="row g-3 align-items-end">
+        <div class="col-md-8"><label class="form-label" for="selectLot">완료 작업지시의 완제품 LOT</label><select class="form-select" id="selectLot" name="finishedLotId"><option value="">선택해 주세요</option><option th:each="choice : ${lots}" th:value="${choice.finishedLotId}" th:selected="${qualityInspectionForm.finishedLotId == choice.finishedLotId}" th:text="${choice.lotNo + ' · ' + choice.productCode + ' · 미검사 ' + choice.uninspectedQty.stripTrailingZeros().toPlainString() + ' EA'}"></option></select></div>
+        <div class="col-md-4"><button class="btn btn-outline-primary" type="submit">LOT 조회</button></div>
+    </form><div th:if="${choicesError}" class="alert alert-warning mt-3 mb-0" role="alert" th:text="${choicesError}"></div></section>
+    <div th:replace="~{quality/fragments :: limitation}"></div>
+    <th:block th:if="${lot != null}"><section th:replace="~{quality/fragments :: summary(${lot})}"></section><p><a th:href="@{/finished-goods-lots/{id}/inspections(id=${lot.finishedLotId})}">선택한 LOT 검사 이력</a></p></th:block>
+    <section class="panel bom-form-panel"><form method="post" th:action="@{/quality-inspections}" th:object="${qualityInspectionForm}" data-save-form>
+        <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger" role="alert"><strong>처리하지 못했습니다.</strong><ul class="mb-0 mt-1"><li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li></ul></div>
+        <input type="hidden" th:field="*{finishedLotId}"><input type="hidden" th:field="*{requestKey}">
+        <div class="section-heading"><h2>회차별 검사 결과</h2></div><div class="row g-4">
+            <div class="col-md-4"><label class="form-label" for="inspectedQty">검사수량 (EA)</label><input class="form-control" type="text" inputmode="numeric" th:field="*{inspectedQty}" th:errorclass="is-invalid" required></div>
+            <div class="col-md-4"><label class="form-label" for="acceptedQty">합격수량 (EA)</label><input class="form-control" type="text" inputmode="numeric" th:field="*{acceptedQty}" th:errorclass="is-invalid" required></div>
+            <div class="col-md-4"><label class="form-label" for="rejectedQty">불합격수량 (EA)</label><input class="form-control" type="text" inputmode="numeric" th:field="*{rejectedQty}" th:errorclass="is-invalid" required></div>
+            <div class="col-md-6"><label class="form-label" for="inspectorRef">검사자 식별자</label><input class="form-control" th:field="*{inspectorRef}" th:errorclass="is-invalid" maxlength="64" required></div>
+            <div class="col-12"><label class="form-label" for="judgementReason">판정 사유 (선택)</label><textarea class="form-control" th:field="*{judgementReason}" th:errorclass="is-invalid" maxlength="500" rows="3"></textarea></div>
+        </div><p class="form-text">검사수량 = 합격수량 + 불합격수량이며 미검사수량 이내의 양수여야 합니다. 모두 EA 정수입니다. 회차는 서버에서 배정합니다. 저장 결과가 불명확하면 같은 요청 키와 입력을 유지해 재시도해 주세요. 이력 수정·삭제는 제공하지 않습니다.</p>
+        <div class="form-actions"><a class="btn btn-outline-secondary" th:href="@{/quality-inspections}">목록</a><button class="btn btn-primary" type="submit" th:disabled="${retryAvailable != true and (lot == null or !lot.registrationAllowed or choicesError != null)}">검사 결과 저장</button></div>
+    </form></section>
+</main></body></html>

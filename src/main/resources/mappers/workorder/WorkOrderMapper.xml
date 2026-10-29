@@ -65,6 +65,16 @@
                COALESCE(SUM(p.good_qty),0) AS good_qty, COALESCE(SUM(p.defect_qty),0) AS defect_qty
         FROM finished_goods_lot f JOIN production_result p ON p.finished_lot_id=f.finished_lot_id WHERE f.work_order_id=#{id}
     </select>
+    <select id="findFinishedLot" resultType="com.taehyung.mes.production.FinishedGoodsLot">
+        SELECT finished_lot_id,work_order_id,lot_no,created_at,created_by
+        FROM finished_goods_lot WHERE work_order_id=#{id}
+    </select>
+    <select id="findProductionResults" resultType="com.taehyung.mes.production.ProductionResult">
+        SELECT p.production_result_id,p.finished_lot_id,p.produced_qty,p.good_qty,p.defect_qty,p.produced_at,p.worker_ref,
+               f.work_order_id,f.lot_no
+        FROM finished_goods_lot f JOIN production_result p ON p.finished_lot_id=f.finished_lot_id
+        WHERE f.work_order_id=#{id} ORDER BY p.production_result_id DESC
+    </select>
     <select id="hasExecutionHistory" resultType="boolean">
         SELECT EXISTS(SELECT 1 FROM finished_goods_lot WHERE work_order_id=#{id})
             OR EXISTS(SELECT 1 FROM material_consumption WHERE work_order_id=#{id})
@@ -79,4 +89,7 @@
         WHERE work_order_id=#{id} AND status='READY'</update>
     <update id="cancel">UPDATE work_order SET status='CANCELLED', cancelled_at=UTC_TIMESTAMP(6), cancelled_by=#{actor}, updated_at=UTC_TIMESTAMP(6)
         WHERE work_order_id=#{id} AND status='READY'</update>
+    <update id="complete">UPDATE work_order SET status='COMPLETED',inspection_target_qty=#{targetQty},
+        completed_at=UTC_TIMESTAMP(6),completed_by=#{actor},updated_at=UTC_TIMESTAMP(6)
+        WHERE work_order_id=#{id} AND status='IN_PROGRESS' AND inspection_target_qty IS NULL</update>
 </mapper>

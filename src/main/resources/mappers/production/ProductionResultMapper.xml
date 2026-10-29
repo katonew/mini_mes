@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taehyung.mes.production.ProductionResultMapper">
+    <sql id="resultColumns">p.production_result_id, p.finished_lot_id, p.receipt_id, p.produced_qty, p.good_qty,
+        p.defect_qty, p.produced_at, p.worker_ref, p.revision_no, p.created_at, p.created_by,
+        f.work_order_id, f.lot_no, i.item_code AS product_code, i.item_name AS product_name,
+        r.initial_outcome_snapshot AS snapshot</sql>
+    <sql id="resultJoins">FROM production_result p JOIN finished_goods_lot f ON f.finished_lot_id=p.finished_lot_id
+        JOIN work_order w ON w.work_order_id=f.work_order_id JOIN item i ON i.item_id=w.product_item_id
+        JOIN request_receipt r ON r.receipt_id=p.receipt_id</sql>
+    <select id="findAll" resultType="com.taehyung.mes.production.ProductionResult">
+        SELECT <include refid="resultColumns"/> <include refid="resultJoins"/>
+        <where>
+            <if test="workOrderId != null">AND f.work_order_id=#{workOrderId}</if>
+            <if test="lotNo != ''">AND LOCATE(#{lotNo}, CONVERT(f.lot_no USING utf8mb4)) &gt; 0</if>
+            <if test="keyword != ''">AND (LOCATE(#{keyword}, CONVERT(i.item_code USING utf8mb4)) &gt; 0 OR LOCATE(#{keyword}, i.item_name) &gt; 0)</if>
+        </where> ORDER BY p.production_result_id DESC
+    </select>
+    <select id="findById" resultType="com.taehyung.mes.production.ProductionResult">
+        SELECT <include refid="resultColumns"/> <include refid="resultJoins"/> WHERE p.production_result_id=#{resultId}
+    </select>
+    <select id="findByReceipt" resultType="com.taehyung.mes.production.ProductionResult">
+        SELECT <include refid="resultColumns"/> <include refid="resultJoins"/> WHERE p.receipt_id=#{receiptId}
+    </select>
+    <sql id="lotColumns">f.finished_lot_id, f.work_order_id, f.lot_no, f.created_at, f.created_by,
+        i.item_code AS product_code, i.item_name AS product_name, w.status AS work_order_status, w.ordered_qty,
+        (SELECT COUNT(*) FROM production_result p WHERE p.finished_lot_id=f.finished_lot_id) AS result_count,
+        (SELECT COALESCE(SUM(p.produced_qty),0) FROM production_result p WHERE p.finished_lot_id=f.finished_lot_id) AS produced_qty,
+        (SELECT COALESCE(SUM(p.good_qty),0) FROM production_result p WHERE p.finished_lot_id=f.finished_lot_id) AS good_qty,
+        (SELECT COALESCE(SUM(p.defect_qty),0) FROM production_result p WHERE p.finished_lot_id=f.finished_lot_id) AS defect_qty</sql>
+    <sql id="lotJoins">FROM finished_goods_lot f JOIN work_order w ON w.work_order_id=f.work_order_id
+        JOIN item i ON i.item_id=w.product_item_id</sql>
+    <select id="findLotByWorkOrder" resultType="com.taehyung.mes.production.FinishedGoodsLot">
+        SELECT <include refid="lotColumns"/> <include refid="lotJoins"/> WHERE f.work_order_id=#{workOrderId}
+    </select>
+    <select id="findLotById" resultType="com.taehyung.mes.production.FinishedGoodsLot">
+        SELECT <include refid="lotColumns"/> <include refid="lotJoins"/> WHERE f.finished_lot_id=#{lotId}
+    </select>
+    <select id="findLots" resultType="com.taehyung.mes.production.FinishedGoodsLot">
+        SELECT <include refid="lotColumns"/> <include refid="lotJoins"/>
+        <where>
+            <if test="workOrderId != null">AND f.work_order_id=#{workOrderId}</if>
+            <if test="lotNo != ''">AND LOCATE(#{lotNo}, CONVERT(f.lot_no USING utf8mb4)) &gt; 0</if>
+            <if test="keyword != ''">AND (LOCATE(#{keyword}, CONVERT(i.item_code USING utf8mb4)) &gt; 0 OR LOCATE(#{keyword}, i.item_name) &gt; 0)</if>
+        </where> ORDER BY f.finished_lot_id DESC
+    </select>
+    <select id="findByLot" resultType="com.taehyung.mes.production.ProductionResult">
+        SELECT <include refid="resultColumns"/> <include refid="resultJoins"/> WHERE f.finished_lot_id=#{lotId}
+        ORDER BY p.production_result_id DESC
+    </select>
+    <select id="existsLotNo" resultType="boolean">SELECT EXISTS(SELECT 1 FROM finished_goods_lot WHERE lot_no=#{lotNo})</select>
+    <insert id="insertLot" useGeneratedKeys="true" keyProperty="finishedLotId" keyColumn="finished_lot_id">
+        INSERT INTO finished_goods_lot(work_order_id,lot_no,created_by) VALUES (#{workOrderId},#{lotNo},#{createdBy})
+    </insert>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="productionResultId" keyColumn="production_result_id">
+        INSERT INTO production_result(finished_lot_id,receipt_id,produced_qty,good_qty,defect_qty,produced_at,worker_ref,created_by)
+        VALUES (#{finishedLotId},#{receiptId},#{producedQty},#{goodQty},#{defectQty},UTC_TIMESTAMP(6),#{workerRef},#{createdBy})
+    </insert>
+    <insert id="claimReceipt" useGeneratedKeys="true" keyProperty="receiptId" keyColumn="receipt_id">
+        INSERT INTO request_receipt(scope_key,operation_code,request_key,payload_fingerprint,created_by)
+        VALUES (#{scopeKey},'PRODUCTION_RESULT',#{requestKey},#{payloadFingerprint},#{createdBy})
+    </insert>
+    <select id="findReceipt" resultType="com.taehyung.mes.production.ProductionResultReceipt">
+        SELECT receipt_id,scope_key,operation_code,request_key,payload_fingerprint,
+               initial_outcome_snapshot AS snapshot,processed_at,created_by
+        FROM request_receipt WHERE scope_key=#{scopeKey} AND operation_code='PRODUCTION_RESULT' AND request_key=#{requestKey}
+    </select>
+    <update id="finishReceipt">UPDATE request_receipt SET initial_outcome_snapshot=#{snapshot},processed_at=UTC_TIMESTAMP(6)
+        WHERE receipt_id=#{receiptId} AND operation_code='PRODUCTION_RESULT' AND processed_at IS NULL AND initial_outcome_snapshot IS NULL</update>
+    <select id="countReceiptResults" resultType="int">
+        SELECT (SELECT COUNT(*) FROM production_result WHERE receipt_id=#{receiptId})
+             + (SELECT COUNT(*) FROM material_consumption WHERE receipt_id=#{receiptId})
+             + (SELECT COUNT(*) FROM material_return WHERE receipt_id=#{receiptId})
+             + (SELECT COUNT(*) FROM quality_inspection WHERE receipt_id=#{receiptId})
+    </select>
+</mapper>

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('품질검사 상세', ~{::main})}"><head><title>품질검사 상세</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/quality-inspections}">← 품질검사 목록</a><section class="page-heading"><div><p class="eyebrow">QUALITY / INSPECTION</p><h1 th:text="${'검사 ' + inspection.inspectionId + ' · ' + inspection.roundNo + '회'}"></h1><p class="page-description">등록한 검사 이력은 수정하거나 삭제하지 않습니다.</p></div><a class="btn btn-outline-primary" th:href="@{/finished-goods-lots/{id}/inspections(id=${lot.finishedLotId})}">LOT 전체 검사 이력</a></section>
+    <section class="panel search-panel"><div class="section-heading"><h2>해당 회차의 검사 결과</h2></div><dl class="row mb-0 bom-summary">
+        <dt class="col-sm-4">검사수량</dt><dd class="col-sm-8" th:text="${inspection.inspectedQty.stripTrailingZeros().toPlainString() + ' EA'}"></dd>
+        <dt class="col-sm-4">합격수량</dt><dd class="col-sm-8" th:text="${inspection.acceptedQty.stripTrailingZeros().toPlainString() + ' EA'}"></dd>
+        <dt class="col-sm-4">불합격수량</dt><dd class="col-sm-8" th:text="${inspection.rejectedQty.stripTrailingZeros().toPlainString() + ' EA'}"></dd>
+        <dt class="col-sm-4">검사자</dt><dd class="col-sm-8" th:text="${inspection.inspectorRef}"></dd>
+        <dt class="col-sm-4">검사시각 (KST)</dt><dd class="col-sm-8" th:text="${@kstDateTimeFormatter.formatUtc(inspection.inspectedAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+        <dt class="col-sm-4">판정 사유</dt><dd class="col-sm-8 text-break" th:text="${inspection.judgementReason == null ? '—' : inspection.judgementReason}"></dd>
+        <dt class="col-sm-4">등록자</dt><dd class="col-sm-8" th:text="${inspection.createdBy}"></dd>
+    </dl></section>
+    <section th:replace="~{quality/fragments :: summary(${lot})}"></section><div th:replace="~{quality/fragments :: limitation}"></div>
+</main></body></html>

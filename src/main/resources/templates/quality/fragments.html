@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"><head><title>품질검사 공통 표시</title></head><body>
+<section th:fragment="summary(lot)" class="panel search-panel">
+    <div class="section-heading"><h2>LOT 검사 수량</h2></div>
+    <dl class="row mb-0 bom-summary">
+        <dt class="col-sm-4">완제품 LOT</dt><dd class="col-sm-8"><a th:href="@{/finished-goods-lots/{id}(id=${lot.finishedLotId})}" th:text="${lot.lotNo}"></a></dd>
+        <dt class="col-sm-4">제품</dt><dd class="col-sm-8" th:text="${lot.productCode + ' · ' + lot.productName}"></dd>
+        <dt class="col-sm-4">작업지시 / 상태</dt><dd class="col-sm-8"><a th:href="@{/work-orders/{id}(id=${lot.workOrderId})}" th:text="${lot.workOrderId}"></a><span th:text="${' / ' + lot.workOrderStatus}"></span></dd>
+        <dt class="col-sm-4">확정 검사 대상</dt><dd class="col-sm-8" th:text="${lot.inspectionTargetQty == null ? '작업지시 완료 시 확정' : lot.inspectionTargetQty.stripTrailingZeros().toPlainString() + ' EA'}"></dd>
+        <dt class="col-sm-4">누적 검사 / 합격 / 불합격</dt><dd class="col-sm-8" th:text="${lot.inspectedQty.stripTrailingZeros().toPlainString() + ' / ' + lot.acceptedQty.stripTrailingZeros().toPlainString() + ' / ' + lot.rejectedQty.stripTrailingZeros().toPlainString() + ' EA'}"></dd>
+        <dt class="col-sm-4">미검사</dt><dd class="col-sm-8" th:text="${lot.uninspectedQty == null ? '대상 미확정' : lot.uninspectedQty.stripTrailingZeros().toPlainString() + ' EA'}"></dd>
+    </dl>
+    <p th:if="${lot.inspectionTargetQty != null and lot.inspectionTargetQty.signum() == 0}" class="form-text">확정 검사 대상이 0 EA입니다. 검사 등록 및 자동 합격 처리를 하지 않습니다.</p>
+    <p class="form-text mb-0">생산 불량은 검사 대상에서 제외합니다. 검사 결과는 생산실적 수량과 작업지시 상태를 변경하지 않습니다.</p>
+</section>
+<div th:fragment="limitation" class="alert alert-warning" role="note">LOT별 수량 기반 검사입니다. 요청 재전송 중복과 누적 수량 초과를 방지하지만, 서로 다른 요청에서 동일한 실물 제품을 반복 검사했는지는 식별할 수 없습니다. 개별 제품 식별 및 물리적 중복 방지 정책은 미확정입니다.</div>
+<div th:fragment="rows(inspections)" class="table-responsive">
+    <table class="table align-middle mb-0"><thead><tr><th scope="col">검사 / 회차</th><th scope="col">완제품 LOT / 제품</th><th scope="col">작업지시</th><th scope="col">검사 / 합격 / 불합격 (EA)</th><th scope="col">검사자</th><th scope="col">검사시각 (KST)</th></tr></thead>
+    <tbody><tr th:each="row : ${inspections}">
+        <td><a th:href="@{/quality-inspections/{id}(id=${row.inspectionId})}" th:text="${row.inspectionId + ' / ' + row.roundNo + '회'}"></a></td>
+        <td><a th:href="@{/finished-goods-lots/{id}/inspections(id=${row.finishedLotId})}" th:text="${row.lotNo}"></a><div class="subtle" th:text="${row.productCode + ' · ' + row.productName}"></div></td>
+        <td><a th:href="@{/work-orders/{id}(id=${row.workOrderId})}" th:text="${row.workOrderId}"></a></td>
+        <td th:text="${row.inspectedQty.stripTrailingZeros().toPlainString() + ' / ' + row.acceptedQty.stripTrailingZeros().toPlainString() + ' / ' + row.rejectedQty.stripTrailingZeros().toPlainString()}"></td>
+        <td th:text="${row.inspectorRef}"></td><td th:text="${@kstDateTimeFormatter.formatUtc(row.inspectedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+    </tr><tr th:if="${#lists.isEmpty(inspections)}"><td colspan="6" class="empty-state">등록된 품질검사 이력이 없습니다.</td></tr></tbody></table>
+</div>
+</body></html>

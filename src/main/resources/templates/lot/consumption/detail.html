@@ -9,4 +9,9 @@
         <dt class="col-sm-4">소비 당시 차감 전 가용수량</dt><dd class="col-sm-8" th:text="${consumption.outcome.availableBefore + ' ' + consumption.unitCode}"></dd><dt class="col-sm-4">소비 당시 차감 후 가용수량</dt><dd class="col-sm-8" th:text="${consumption.outcome.availableAfter + ' ' + consumption.unitCode}"></dd>
         <dt class="col-sm-4">현재 LOT 가용수량</dt><dd class="col-sm-8" th:text="${consumption.availableQty.stripTrailingZeros().toPlainString() + ' ' + consumption.unitCode}"></dd><dt class="col-sm-4">이 소비의 누적 반환수량</dt><dd class="col-sm-8" th:text="${consumption.returnedQty.stripTrailingZeros().toPlainString() + ' ' + consumption.unitCode}"></dd>
     </dl><p class="form-text mb-0">소비 당시 수량은 최초 성공 결과입니다. 이후 소비·반환으로 바뀐 현재 LOT 가용수량과 구분합니다. 같은 요청의 재전송은 최초 결과를 유지하며 소비 원본을 변경하지 않습니다.</p></section>
+    <section class="panel search-panel"><div class="section-heading"><h2>원소비 연결 반환</h2></div>
+        <p th:text="${'원소비 ' + consumption.consumedQty.stripTrailingZeros().toPlainString() + ' / 기반환 ' + consumption.returnedQty.stripTrailingZeros().toPlainString() + ' / 반환가능 ' + consumption.consumedQty.subtract(consumption.returnedQty).stripTrailingZeros().toPlainString() + ' ' + consumption.unitCode}"></p>
+        <div class="form-actions"><a class="btn btn-outline-secondary" th:href="@{/material-returns(consumptionId=${consumption.consumptionId})}">이 소비의 반환 이력</a><a class="btn btn-primary" th:if="${consumption.workOrderStatus == 'IN_PROGRESS' and consumption.consumedQty.compareTo(consumption.returnedQty) > 0}" th:href="@{/material-returns/new(consumptionId=${consumption.consumptionId})}">원자재 반환</a></div>
+        <p class="form-text mb-0">진행 중인 작업지시에서만 새 반환을 등록합니다. 완료된 작업지시의 반환 이력도 조회할 수 있습니다.</p>
+    </section>
 </main></body></html>

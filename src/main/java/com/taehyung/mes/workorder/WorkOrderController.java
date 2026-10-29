@@ -71,6 +71,16 @@ public class WorkOrderController {
         }
         return "redirect:/work-orders/" + id;
     }
+    @PostMapping("/work-orders/{id}/complete")
+    public String complete(@PathVariable("id") Long id, RedirectAttributes redirect) {
+        try { service.complete(id); redirect.addFlashAttribute("successMessage", "작업지시를 완료하고 누적 양품수량을 최종 검사 대상수량으로 확정했습니다."); }
+        catch (WorkOrderRuleException exception) { redirect.addFlashAttribute("actionError", exception.getMessage()); }
+        catch (DataAccessException exception) {
+            log.warn("작업지시 완료 실패: {}", exception.getClass().getSimpleName());
+            redirect.addFlashAttribute("actionError", "완료 처리에 실패했습니다. 현재 실적·상태를 다시 확인해 주세요.");
+        }
+        return "redirect:/work-orders/" + id;
+    }
     private String formView(Model model, WorkOrderForm form, boolean initializing) {
         model.addAttribute("plans", List.of()); model.addAttribute("options", null);
         WorkOrderOptions selectedOptions = null;

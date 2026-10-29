@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('원자재 반환 이력', ~{::main})}">
+<head><title>원자재 반환 이력</title></head><body><main id="main-content">
+    <section class="page-heading"><div><p class="eyebrow">PRODUCTION / MATERIAL RETURNS</p><h1>원자재 반환 이력</h1><p class="page-description">원소비에 연결된 실제 반환을 조회합니다. 새 반환은 소비 상세에서 시작합니다.</p></div><a class="btn btn-primary" th:href="@{/material-consumptions}">원소비 선택</a></section>
+    <section class="panel search-panel"><div class="section-heading"><h2>반환 이력 검색</h2></div><form method="get" th:action="@{/material-returns}" class="row g-3 align-items-end">
+        <div class="col-md-2"><label class="form-label" for="workOrderId">작업지시 ID</label><input class="form-control" id="workOrderId" name="workOrderId" inputmode="numeric" maxlength="19" th:value="${workOrderId}"></div>
+        <div class="col-md-2"><label class="form-label" for="consumptionId">원소비 ID</label><input class="form-control" id="consumptionId" name="consumptionId" inputmode="numeric" maxlength="19" th:value="${consumptionId}"></div>
+        <div class="col-md-3"><label class="form-label" for="lotNo">원자재 LOT 번호</label><input class="form-control" id="lotNo" name="lotNo" type="search" maxlength="64" th:value="${lotNo}"></div>
+        <div class="col-md-3"><label class="form-label" for="keyword">원자재 코드·명칭</label><input class="form-control" id="keyword" name="keyword" type="search" maxlength="200" th:value="${keyword}"></div>
+        <div class="col-md-2 search-actions"><a class="btn btn-outline-secondary" th:href="@{/material-returns}">초기화</a><button class="btn btn-primary" type="submit">검색</button></div>
+    </form><div th:if="${searchError}" class="alert alert-danger mt-3 mb-0" role="alert" th:text="${searchError}"></div></section>
+    <section class="panel list-panel"><div class="list-heading"><div class="d-flex align-items-center gap-2"><h2>실제 반환 목록</h2><span class="count-pill" th:if="${searchError == null}" th:text="${#lists.size(returns)}"></span></div><span class="subtle">최신 등록순</span></div>
+        <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th scope="col">반환 / 원소비</th><th scope="col">작업지시</th><th scope="col">원자재 LOT / 품목</th><th scope="col" class="text-end">반환수량</th><th scope="col">사유</th><th scope="col">반환시각 (KST)</th></tr></thead><tbody>
+            <tr th:each="row : ${returns}"><td><a class="item-code" th:href="@{/material-returns/{id}(id=${row.returnId})}" th:text="${row.returnId}"></a><small class="d-block"><a th:href="@{/material-consumptions/{id}(id=${row.consumptionId})}" th:text="${'원소비 ' + row.consumptionId}"></a></small></td><td th:text="${row.workOrderId}"></td><td class="item-name"><span th:text="${row.lotNo}"></span><small class="d-block subtle" th:text="${row.itemCode + ' · ' + row.itemName}"></small></td><td class="text-end" th:text="${row.returnedQty.stripTrailingZeros().toPlainString() + ' ' + row.unitCode}"></td><td class="text-break" th:text="${row.reason}"></td><td th:text="${@kstDateTimeFormatter.formatUtc(row.returnedAt, 'yyyy-MM-dd HH:mm')}"></td></tr>
+            <tr th:if="${#lists.isEmpty(returns) and searchError == null}"><td colspan="6" class="empty-state"><span class="empty-mark" aria-hidden="true">—</span><strong>조회된 원자재 반환 이력이 없습니다</strong><p>검색 조건을 변경하거나 원소비 상세에서 반환을 등록해 주세요.</p></td></tr>
+            <tr th:if="${searchError}"><td colspan="6" class="empty-state">검색 조건을 확인해 주세요.</td></tr>
+        </tbody></table></div><div class="table-note"><span class="note-dot"></span>완료된 작업지시의 과거 반환도 조회합니다. 원소비수량은 여러 반환행에 중복 합산하지 않습니다.</div>
+    </section>
+</main></body></html>

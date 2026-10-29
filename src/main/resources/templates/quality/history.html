@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('LOT별 검사 이력', ~{::main})}"><head><title>LOT별 검사 이력</title></head><body><main id="main-content">
+    <a class="back-link" th:href="@{/finished-goods-lots/{id}(id=${lot.finishedLotId})}">← 완제품 LOT 상세</a>
+    <section class="page-heading"><div><p class="eyebrow">QUALITY / LOT HISTORY</p><h1 th:text="${lot.lotNo + ' 검사 이력'}"></h1><p class="page-description">확정 대상과 회차별 검사 결과를 기준으로 누적 수량을 표시합니다.</p></div><a th:if="${lot.registrationAllowed}" class="btn btn-primary" th:href="@{/quality-inspections/new(finishedLotId=${lot.finishedLotId})}">품질검사 등록</a></section>
+    <section th:replace="~{quality/fragments :: summary(${lot})}"></section><div th:replace="~{quality/fragments :: limitation}"></div>
+    <section class="panel list-panel"><div class="list-heading"><h2>회차별 검사 이력</h2><span class="count-pill" th:text="${#lists.size(inspections)}"></span></div><div th:replace="~{quality/fragments :: rows(${inspections})}"></div></section>
+</main></body></html>
