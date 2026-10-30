@@ -30,7 +30,7 @@ public class ItemController {
     ItemUnit[] units() { return ItemUnit.values(); }
 
     @GetMapping("/")
-    public String home() { return "redirect:/items"; }
+    public String home() { return "redirect:/dashboard"; }
 
     @GetMapping("/items")
     public String list(@RequestParam(name = "code", defaultValue = "") String code,
