@@ -35,7 +35,7 @@
             <a class="menu-item" th:classappend="${activeMenu == 'finished-goods-lots' ? 'active' : ''}" th:href="@{/finished-goods-lots}" th:attr="aria-current=${activeMenu == 'finished-goods-lots' ? 'page' : null}">완제품 LOT</a>
             <span class="menu-item unavailable" aria-disabled="true">불량 관리<small>준비 중</small></span>
             <a class="menu-item" th:classappend="${activeMenu == 'quality-inspections' ? 'active' : ''}" th:href="@{/quality-inspections}" th:attr="aria-current=${activeMenu == 'quality-inspections' ? 'page' : null}">품질검사</a>
-            <span class="menu-item unavailable" aria-disabled="true">LOT 추적<small>준비 중</small></span>
+            <a class="menu-item" th:classappend="${activeMenu == 'lot-traces' ? 'active' : ''}" th:href="@{/lot-traces}" th:attr="aria-current=${activeMenu == 'lot-traces' ? 'page' : null}">LOT 추적</a>
         </nav>
         <div class="sidebar-footer"><span class="phase-dot"></span>PHASE 01 <strong>기준정보 구축</strong></div>
     </aside>

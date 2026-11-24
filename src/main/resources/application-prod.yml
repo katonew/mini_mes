@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: "jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?characterEncoding=UTF-8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true"
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  thymeleaf:
+    cache: true
+
+server:
+  address: 0.0.0.0
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    "com.taehyung.mes": INFO
+    "org.mybatis": WARN

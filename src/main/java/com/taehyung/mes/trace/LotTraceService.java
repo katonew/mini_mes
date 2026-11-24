@@ -5,6 +5,10 @@ import com.taehyung.mes.lot.MaterialConsumptionMapper;
 import com.taehyung.mes.lot.MaterialConsumptionMaterial;
 import com.taehyung.mes.lot.MaterialReturn;
 import com.taehyung.mes.lot.MaterialReturnMapper;
+import com.taehyung.mes.lot.RawMaterialLot;
+import com.taehyung.mes.lot.RawMaterialLotMapper;
+import com.taehyung.mes.lot.RawMaterialLotNotFoundException;
+import com.taehyung.mes.production.FinishedGoodsLot;
 import com.taehyung.mes.production.ProductionResultMapper;
 import com.taehyung.mes.production.ProductionResultNotFoundException;
 import com.taehyung.mes.quality.QualityInspectionLot;
@@ -33,10 +37,25 @@ public class LotTraceService {
     private final QualityInspectionMapper quality;
     private final BomMapper boms;
     private final RoutingMapper routings;
+    private final RawMaterialLotMapper rawLots;
+    private final LotTraceMapper traces;
     public LotTraceService(ProductionResultMapper production, WorkOrderMapper orders, MaterialConsumptionMapper consumption,
-                           MaterialReturnMapper returns, QualityInspectionMapper quality, BomMapper boms, RoutingMapper routings) {
+                           MaterialReturnMapper returns, QualityInspectionMapper quality, BomMapper boms, RoutingMapper routings,
+                           RawMaterialLotMapper rawLots, LotTraceMapper traces) {
         this.production = production; this.orders = orders; this.consumption = consumption;
         this.returns = returns; this.quality = quality; this.boms = boms; this.routings = routings;
+        this.rawLots = rawLots; this.traces = traces;
+    }
+    @Transactional(readOnly=true)
+    public List<RawMaterialLot> searchRaw(String lotNo) { return rawLots.findAll(lotNo, "", ""); }
+    @Transactional(readOnly=true)
+    public List<FinishedGoodsLot> searchFinished(String lotNo) { return production.findLots(null, lotNo, ""); }
+    @Transactional(readOnly=true, isolation=Isolation.REPEATABLE_READ)
+    public ForwardLotTraceDetails forward(Long lotId) {
+        if (lotId == null || lotId <= 0) { throw new RawMaterialLotNotFoundException(); }
+        var lot = rawLots.findById(lotId);
+        if (lot == null) { throw new RawMaterialLotNotFoundException(); }
+        return new ForwardLotTraceDetails(lot, traces.findForward(lotId));
     }
     // 모든 일반 SELECT가 동일한 InnoDB 일관 읽기 범위를 공유한다. 잠금·쓰기·별도 트랜잭션 호출은 없다.
     @Transactional(readOnly=true, isolation=Isolation.REPEATABLE_READ)

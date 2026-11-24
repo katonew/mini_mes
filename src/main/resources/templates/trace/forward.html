@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: shell('원자재 LOT 정방향 추적', ~{::main})}">
+<head><title>원자재 LOT 정방향 추적</title></head><body><main id="main-content" class="lot-trace" th:with="lot=${trace.lot}">
+    <a class="back-link" th:href="@{/lot-traces(direction='forward',lotNo=${lot.lotNo})}">← LOT 추적 검색</a>
+    <section class="page-heading"><div><p class="eyebrow">LOT / FORWARD TRACEABILITY</p><h1><span class="code-input text-break" th:text="${lot.lotNo}"></span> 정방향 추적</h1><p class="page-description">실제 투입·반환 이력으로 작업지시와 영향 가능 완제품 LOT를 조회합니다.</p></div></section>
+    <section class="panel search-panel"><div class="section-heading"><h2>원자재 LOT</h2><a th:href="@{/raw-material-lots/{id}(id=${lot.rawLotId})}">LOT 상세</a></div><dl class="row mb-0 bom-summary">
+        <dt class="col-sm-3">LOT 번호</dt><dd class="col-sm-9 code-input" th:text="${lot.lotNo}"></dd>
+        <dt class="col-sm-3">원자재</dt><dd class="col-sm-9" th:text="${lot.itemCode + ' · ' + lot.itemName}"></dd>
+        <dt class="col-sm-3">등록수량</dt><dd class="col-sm-9" th:text="${lot.registeredQty.stripTrailingZeros().toPlainString() + ' ' + lot.unitCode}"></dd>
+        <dt class="col-sm-3">현재 가용수량</dt><dd class="col-sm-9" th:text="${lot.availableQty.stripTrailingZeros().toPlainString() + ' ' + lot.unitCode}"></dd>
+    </dl></section>
+    <div class="alert alert-info" role="note">작업지시 수준의 영향 가능 범위입니다. 개별 완제품에 사용된 원자재를 식별하거나 불량 영향을 확정하지 않습니다. 전량 반환 관계도 이력으로 남겨 표시합니다.</div>
+    <section class="panel list-panel"><div class="list-heading"><h2>연결 작업지시 · 영향 가능 완제품 LOT</h2><span class="count-pill" th:text="${#lists.size(trace.orders)}"></span></div>
+        <div class="table-responsive"><table class="table trace-table align-middle mb-0"><thead><tr><th scope="col">작업지시 / 제품</th><th scope="col">상태</th><th scope="col" class="quantity-cell">총 투입</th><th scope="col" class="quantity-cell">총 반환</th><th scope="col" class="quantity-cell">순투입</th><th scope="col">단위</th><th scope="col">영향 가능 완제품 LOT</th><th scope="col">누적 생산 / 양품 / 불량</th><th scope="col">검사 현황</th></tr></thead><tbody>
+            <tr th:each="row : ${trace.orders}" th:classappend="${row.fullyReturned ? 'trace-returned' : ''}">
+                <td data-label="작업지시 / 제품"><a th:href="@{/work-orders/{id}(id=${row.order.workOrderId})}" th:text="${row.order.workOrderId}"></a><span class="item-name" th:text="${row.order.productName}"></span><small class="subtle" th:text="${row.order.productCode}"></small></td>
+                <td data-label="상태"><span class="status-badge" th:text="${row.order.statusLabel}"></span><span th:if="${row.fullyReturned}" class="d-block subtle mt-2">전량 반환 · 순투입 없음</span><span th:unless="${row.fullyReturned}" class="d-block mt-2">순투입 있음</span></td>
+                <td data-label="총 투입" class="quantity-cell" th:text="${row.consumedQty.stripTrailingZeros().toPlainString()}"></td>
+                <td data-label="총 반환" class="quantity-cell" th:text="${row.returnedQty.stripTrailingZeros().toPlainString()}"></td>
+                <td data-label="순투입" class="quantity-cell quantity-emphasis" th:text="${row.netConsumedQty.stripTrailingZeros().toPlainString()}"></td>
+                <td data-label="자재 단위" th:text="${lot.unitCode}"></td>
+                <td data-label="영향 가능 완제품 LOT"><a th:if="${row.lot != null}" class="item-code" th:href="@{/finished-goods-lots/{id}/trace(id=${row.lot.finishedLotId})}" th:text="${row.lot.lotNo}"></a><span th:if="${row.lot == null}" class="subtle">미생성 · 최초 생산실적 등록 전</span><small th:if="${row.fullyReturned}" class="d-block subtle">투입 이력상 연결 · 전량 반환</small></td>
+                <td data-label="누적 생산 / 양품 / 불량"><span th:if="${row.lot != null}" th:text="${row.lot.producedQty.stripTrailingZeros().toPlainString() + ' / ' + row.lot.goodQty.stripTrailingZeros().toPlainString() + ' / ' + row.lot.defectQty.stripTrailingZeros().toPlainString() + ' ' + row.order.productUnitCode}"></span><span th:if="${row.lot == null or (row.lot != null and row.lot.resultCount == 0)}" class="d-block subtle">생산실적 없음</span></td>
+                <td data-label="검사 현황"><span th:text="${row.inspectionProgressLabel}"></span><small class="d-block subtle" th:text="${'대상: ' + (row.order.inspectionTargetQty == null ? '완료 시 확정' : row.order.inspectionTargetQty.stripTrailingZeros().toPlainString() + ' EA')}"></small><small th:if="${row.quality != null}" class="d-block subtle" th:text="${'검사 ' + row.quality.inspectedQty.stripTrailingZeros().toPlainString() + ' / 합격 ' + row.quality.acceptedQty.stripTrailingZeros().toPlainString() + ' / 불합격 ' + row.quality.rejectedQty.stripTrailingZeros().toPlainString() + ' EA'}"></small></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(trace.orders)}"><td colspan="9" class="empty-state">이 원자재 LOT의 투입 이력이 없습니다. 연결 작업지시와 영향 가능 완제품 LOT가 없습니다.</td></tr>
+        </tbody></table></div>
+    </section>
+    <p class="form-text">순투입 = 총 투입 − 총 반환. 생산 불량과 검사 불합격은 별도 수량이며 LOT 전체 PASS/FAIL 판정을 생성하지 않습니다.</p>
+</main></body></html>

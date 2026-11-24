@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taehyung.mes.trace.LotTraceMapper">
+    <resultMap id="forwardOrder" type="com.taehyung.mes.trace.ForwardLotTraceOrder">
+        <result property="consumedQty" column="consumed_qty"/>
+        <result property="returnedQty" column="returned_qty"/>
+        <association property="order" javaType="com.taehyung.mes.workorder.WorkOrder" columnPrefix="w_">
+            <id property="workOrderId" column="work_order_id"/>
+            <result property="productCode" column="product_code"/>
+            <result property="productName" column="product_name"/>
+            <result property="status" column="status"/>
+            <result property="productUnitCode" column="product_unit_code"/>
+            <result property="inspectionTargetQty" column="inspection_target_qty"/>
+        </association>
+        <association property="lot" javaType="com.taehyung.mes.production.FinishedGoodsLot" columnPrefix="f_" notNullColumn="finished_lot_id">
+            <id property="finishedLotId" column="finished_lot_id"/>
+            <result property="lotNo" column="lot_no"/>
+            <result property="producedQty" column="produced_qty"/>
+            <result property="goodQty" column="good_qty"/>
+            <result property="defectQty" column="defect_qty"/>
+            <result property="resultCount" column="result_count"/>
+        </association>
+        <association property="quality" javaType="com.taehyung.mes.quality.QualityInspectionLot" columnPrefix="q_" notNullColumn="finished_lot_id">
+            <id property="finishedLotId" column="finished_lot_id"/>
+            <result property="inspectionTargetQty" column="inspection_target_qty"/>
+            <result property="inspectedQty" column="inspected_qty"/>
+            <result property="acceptedQty" column="accepted_qty"/>
+            <result property="rejectedQty" column="rejected_qty"/>
+            <result property="lastRoundNo" column="last_round_no"/>
+        </association>
+    </resultMap>
+    <!-- 각 1:N을 독립 집계하고 반환은 원투입에 한 번만 결합한다. 전량 반환도 보존한다. -->
+    <select id="findForward" resultMap="forwardOrder">
+        WITH returns_by_consumption AS (
+            SELECT r.consumption_id,SUM(r.returned_qty) AS returned_qty
+            FROM material_return r JOIN material_consumption c ON c.consumption_id=r.consumption_id
+            WHERE c.raw_lot_id=#{rawLotId} GROUP BY r.consumption_id
+        ), material_totals AS (
+            SELECT c.work_order_id,SUM(c.consumed_qty) AS consumed_qty,
+                SUM(COALESCE(r.returned_qty,0)) AS returned_qty
+            FROM material_consumption c LEFT JOIN returns_by_consumption r ON r.consumption_id=c.consumption_id
+            WHERE c.raw_lot_id=#{rawLotId} GROUP BY c.work_order_id
+        ), related_lots AS (
+            SELECT f.finished_lot_id FROM finished_goods_lot f
+            JOIN material_totals m ON m.work_order_id=f.work_order_id
+        ), production_totals AS (
+            SELECT p.finished_lot_id,COUNT(*) AS result_count,SUM(p.produced_qty) AS produced_qty,
+                SUM(p.good_qty) AS good_qty,SUM(p.defect_qty) AS defect_qty
+            FROM production_result p JOIN related_lots l ON l.finished_lot_id=p.finished_lot_id
+            GROUP BY p.finished_lot_id
+        ), inspection_totals AS (
+            SELECT q.finished_lot_id,SUM(q.inspected_qty) AS inspected_qty,SUM(q.accepted_qty) AS accepted_qty,
+                SUM(q.rejected_qty) AS rejected_qty,MAX(q.round_no) AS last_round_no
+            FROM quality_inspection q JOIN related_lots l ON l.finished_lot_id=q.finished_lot_id
+            GROUP BY q.finished_lot_id
+        )
+        SELECT m.consumed_qty,m.returned_qty,
+            w.work_order_id AS w_work_order_id,w.status AS w_status,w.product_unit_code AS w_product_unit_code,
+            w.inspection_target_qty AS w_inspection_target_qty,i.item_code AS w_product_code,i.item_name AS w_product_name,
+            f.finished_lot_id AS f_finished_lot_id,f.lot_no AS f_lot_no,
+            COALESCE(p.result_count,0) AS f_result_count,COALESCE(p.produced_qty,0) AS f_produced_qty,
+            COALESCE(p.good_qty,0) AS f_good_qty,COALESCE(p.defect_qty,0) AS f_defect_qty,
+            f.finished_lot_id AS q_finished_lot_id,w.inspection_target_qty AS q_inspection_target_qty,
+            COALESCE(q.inspected_qty,0) AS q_inspected_qty,COALESCE(q.accepted_qty,0) AS q_accepted_qty,
+            COALESCE(q.rejected_qty,0) AS q_rejected_qty,COALESCE(q.last_round_no,0) AS q_last_round_no
+        FROM material_totals m JOIN work_order w ON w.work_order_id=m.work_order_id
+        JOIN item i ON i.item_id=w.product_item_id
+        LEFT JOIN finished_goods_lot f ON f.work_order_id=w.work_order_id
+        LEFT JOIN production_totals p ON p.finished_lot_id=f.finished_lot_id
+        LEFT JOIN inspection_totals q ON q.finished_lot_id=f.finished_lot_id
+        ORDER BY w.work_order_id DESC
+    </select>
+</mapper>

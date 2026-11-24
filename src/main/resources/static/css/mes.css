@@ -139,3 +139,21 @@ h2 { font-size: 1rem; font-weight: 700; margin: 0; }
     .page-footer { gap: 15px; }
 }
 @media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
+
+/* 추적 관계와 수량은 모바일에서도 행별 레이블과 함께 읽을 수 있다. */
+.lot-trace .trace-returned > td { background-color: #f3f5f4; }
+.lot-trace .trace-table { font-variant-numeric: tabular-nums; }
+.lot-trace .trace-table td { overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+    .lot-trace .table-responsive:has(.trace-table) { overflow: visible; }
+    .lot-trace .trace-table, .lot-trace .trace-table tbody, .lot-trace .trace-table tr,
+    .lot-trace .trace-table td { display: block; width: auto; min-width: 0; }
+    .lot-trace .trace-table thead { display: none; }
+    .lot-trace .trace-table tr { padding: 16px 20px; border-bottom: 1px solid var(--mes-line); }
+    .lot-trace .trace-table td { padding: 6px 0; border: 0; text-align: left; white-space: normal; }
+    .lot-trace .trace-table td[data-label]::before { content: attr(data-label); display: block; color: var(--mes-muted); font-size: .75rem; font-weight: 400; margin-bottom: 3px; }
+    .lot-trace .trace-table .item-code, .lot-trace .trace-table .item-name { min-width: 0; overflow-wrap: anywhere; }
+    .lot-trace .trace-returned { background-color: #f3f5f4; }
+    .lot-trace .section-heading, .lot-trace .list-heading { flex-wrap: wrap; gap: 12px; }
+    .lot-trace .search-panel select { max-width: 100%; }
+}

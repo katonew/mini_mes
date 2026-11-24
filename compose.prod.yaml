@@ -1,0 +1,36 @@
+name: mini-mes-prod
+
+services:
+  mini-mes-app:
+    image: eclipse-temurin:17-jre
+    restart: unless-stopped
+    user: "10001:10001"
+    command: ["java", "-jar", "/app/app.jar"]
+    volumes:
+      - type: bind
+        source: ${MES_JAR_FILE:?MES_JAR_FILE is required}
+        target: /app/app.jar
+        read_only: true
+        bind:
+          create_host_path: false
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: ${DB_HOST:?DB_HOST is required}
+      DB_PORT: ${DB_PORT:?DB_PORT is required}
+      DB_NAME: ${DB_NAME:?DB_NAME is required}
+      DB_USER: ${DB_USER:?DB_USER is required}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MES_ACTOR_ID: ${MES_ACTOR_ID:?MES_ACTOR_ID is required}
+    networks:
+      - default
+      - npm
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  npm:
+    external: true
+    name: ${NPM_NETWORK:?NPM_NETWORK is required}
